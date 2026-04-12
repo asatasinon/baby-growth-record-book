@@ -35,12 +35,14 @@
 当需要更新文档状态、版本管理、模板要求、命名、编号或 T 类任务文档规则等治理行为时，应修改对应的 skill/reference，而不是在 `docs/` 下额外补充一套平行说明。
 
 ## 构建、测试与开发命令
-当前仓库尚未纳入应用构建流水线或包清单。现阶段工作主要是文档与规格维护。
+当前仓库现阶段仍以文档与规格维护为主，但研发实现已明确依赖管理约束：前端统一使用 `pnpm`，Python 统一使用 `uv`。
 
 - `rg --files docs`：快速列出受治理的文档集合
 - `git diff -- docs`：在提交前检查文档改动
 - `sed -n '1,120p' docs/specs/S01-openapi.yaml`：分段查看规格文件修改
 - `find .agents/skills -maxdepth 3 -type f | sort`：查看当前启用的治理技能集合
+- `pnpm install`：前端工程依赖安装（如 `miniapp/`、`web/`、`admin/`）
+- `uv sync`：Python 工程依赖同步（如 `backend/`、`worker/`）
 
 如果后续加入可运行的服务，请用真实项目命令更新本指南，而不是保留占位说明。
 
@@ -51,6 +53,7 @@
 - YAML：使用两个空格缩进，并将 OpenAPI 版本保持为 `3.1.0`
 - SQL：优先使用大写 SQL 关键字和 `snake_case` 标识符
 - 文件名：仅使用 ASCII，采用连字符写法，并带类别前缀（`P/A/D/Q/S/T`）
+- 依赖管理：前端统一 `pnpm`，Python 统一 `uv`，避免混用 `npm/yarn/pip/poetry/pipenv`
 
 涉及治理规则的修改时，应更新 `.agents/skills/document-governance/` 或 `.agents/skills/task-doc-management/`，不要在 `docs/` 中重复维护规则。
 

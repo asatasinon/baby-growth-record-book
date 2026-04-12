@@ -18,5 +18,8 @@ class Baby(Base, TimestampMixin):
     due_date: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     birth_weight_g: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     birth_height_cm: Mapped[Optional[float]] = mapped_column(Numeric(6, 2), nullable=True)
-    birth_head_circumference_cm: Mapped[Optional[float]] = mapped_column(Numeric(6, 2), nullable=True)
+    birth_head_circumference_cm: Mapped[Optional[float]] = mapped_column(
+        Numeric(6, 2),
+        nullable=True,
+    )
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")

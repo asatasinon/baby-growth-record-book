@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import BigInteger, Integer, String, Text, UniqueConstraint
+from sqlalchemy import BigInteger, Integer, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -10,7 +10,12 @@ from app.models import Base, TimestampMixin
 class DailySummary(Base, TimestampMixin):
     __tablename__ = "daily_summaries"
     __table_args__ = (
-        UniqueConstraint("family_id", "baby_id", "summary_date", name="uq_daily_summaries_family_baby_date"),
+        UniqueConstraint(
+            "family_id",
+            "baby_id",
+            "summary_date",
+            name="uq_daily_summaries_family_baby_date",
+        ),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -30,7 +35,12 @@ class DailySummary(Base, TimestampMixin):
 class WeeklySummary(Base, TimestampMixin):
     __tablename__ = "weekly_summaries"
     __table_args__ = (
-        UniqueConstraint("family_id", "baby_id", "week_start", name="uq_weekly_summaries_family_baby_week"),
+        UniqueConstraint(
+            "family_id",
+            "baby_id",
+            "week_start",
+            name="uq_weekly_summaries_family_baby_week",
+        ),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)

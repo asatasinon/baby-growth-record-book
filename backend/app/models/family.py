@@ -18,7 +18,9 @@ class Family(Base, TimestampMixin):
 
 class FamilyMember(Base, TimestampMixin):
     __tablename__ = "family_members"
-    __table_args__ = (UniqueConstraint("family_id", "user_id", name="uq_family_members_family_user"),)
+    __table_args__ = (
+        UniqueConstraint("family_id", "user_id", name="uq_family_members_family_user"),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     family_id: Mapped[int] = mapped_column(BigInteger, nullable=False)

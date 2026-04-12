@@ -18,7 +18,9 @@ class User(Base, TimestampMixin):
 
 class UserIdentity(Base, TimestampMixin):
     __tablename__ = "user_identities"
-    __table_args__ = (UniqueConstraint("user_id", "provider", name="uq_user_identities_user_provider"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "provider", name="uq_user_identities_user_provider"),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)

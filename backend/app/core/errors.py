@@ -39,14 +39,16 @@ async def validation_error_handler(_: Request, exc: RequestValidationError) -> J
     value = first_error.get("input")
     reason = first_error.get("msg", "invalid argument")
 
+    message = "invalid argument"
     if first_error.get("type") == "string_pattern_mismatch":
         reason = "must match ^[0-9]+$"
+        message = "invalid id format"
 
     return JSONResponse(
         status_code=400,
         content={
             "code": "INVALID_ARGUMENT",
-            "message": "invalid argument",
+            "message": message,
             "data": {
                 "field": field_name,
                 "reason": reason,

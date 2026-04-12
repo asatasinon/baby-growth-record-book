@@ -66,6 +66,58 @@ Read [references/task-doc-standard.md](./references/task-doc-standard.md) before
    When you add a visible task document, update `docs/task/README.md`.
    Update `docs/README.md` if the task doc should appear in the top-level navigation.
 
+## Refactor workflow
+
+Use this workflow when the repo already has task docs, but they are not yet suitable for direct agent execution.
+
+1. Audit the current `docs/task` set.
+   Identify which docs are:
+   - index/dashboard docs
+   - umbrella plan docs
+   - acceptance/checklist docs
+   - collaboration-boundary docs
+   - execution docs
+
+2. Separate summary docs from execution docs.
+   Do not let `T00`, umbrella plans, or checklist docs become the main working surface if execution docs already exist.
+
+3. Split by stable execution boundary.
+   If a task doc mixes multiple ownership domains, split it into:
+   - one collaboration/control doc if needed
+   - one execution doc per stable responsibility slice
+
+4. Upgrade execution docs to assignment-ready format.
+   Add:
+   - `执行状态`
+   - `执行 owner`
+   - `执行排期`
+   - `预计输入`
+   - `预计输出`
+   - `允许修改的代码目录`
+   - `外部依赖登记表`
+   - `agent 接手说明`
+   - `交接记录`
+   - subtask rows with explicit `子状态` and `Done Criteria`
+
+5. Upgrade `T00` into an active dashboard if the task set is now operational.
+   Include:
+   - portfolio dashboard
+   - owner aggregation view
+   - blocker aggregation view
+   - dispatch rules
+   - recommended execution order
+
+6. Normalize ownership and handoff.
+   Each execution doc should have one primary owner.
+   If real assignee names are unavailable, initialize role-based agent names.
+
+7. Re-link the system.
+   Update `T00`, umbrella docs, and `docs/README.md` so the execution path is obvious.
+
+8. Preserve continuity.
+   Keep numbering stable where possible.
+   Prefer refactoring and clarifying over renumbering unless the current structure is unusable.
+
 ## Use this skill for
 
 - MVP execution plans
@@ -116,6 +168,28 @@ Typical stable slices:
 - testing/integration/acceptance
 
 Do not split by arbitrary temporary staffing if it causes overlapping ownership.
+
+## Repo-specific playbook
+
+For this repository, the current recommended task-doc system is:
+- `T00`: task index, dispatch rules, dashboards, owner/blocker views
+- `T01`: overall phased delivery plan
+- `T02`: integration and acceptance umbrella checklist
+- `T03`: collaboration-boundary and maintenance-rule doc
+- `T04`: spec/contracts and data-model freeze
+- `T05`: frontend user app, H5, and admin
+- `T06`: auth/family/baby/event/backend core
+- `T07`: summary/alerts/async jobs
+- `T08`: AI/export/sharing
+- `T09`: ops/security/release readiness
+- `T10`: quality/integration/acceptance execution
+
+When working in this repo:
+- prefer extending this system over inventing a different `T` layout
+- keep `T04` to `T10` as the primary working docs
+- keep `T01` and `T02` as umbrella docs, not the main execution surface
+- use `T03` to store cross-task agent coordination rules
+- update `T00` whenever ownership, blockers, ETA, or execution state materially changes
 
 ## Assignment-ready task doc pattern
 
@@ -183,3 +257,7 @@ Action: Use this skill to create a task execution document under `docs/task`.
 **Example 4**
 Input: "把任务文档拆成能给多个 agent 并行执行和维护的格式。"
 Action: Use this skill to create or refactor `T00` dashboard docs, a collaboration-boundary doc, and assignment-ready execution docs with explicit owner, inputs, outputs, and handoff rules.
+
+**Example 5**
+Input: "把现有 docs/task 重构成可派单、可交接、可看板跟踪的系统。"
+Action: Use the refactor workflow in this skill. Audit existing `T` docs, separate summary vs. execution roles, upgrade execution docs to assignment-ready format, and normalize `T00` as the active dashboard.

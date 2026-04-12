@@ -356,6 +356,250 @@ Avoid:
 | --- | --- | --- | --- | --- | --- | --- |
 ```
 
+## 8.2 Full T00 dashboard template
+
+Use this when `T00` is an active task-system index rather than a passive list.
+
+```md
+# 任务类文档
+
+> 文档编号：T00
+> 状态：草案
+> 版本号：v0.1.0
+> 最后更新时间：2026-04-12
+> 审核人：待定
+> 生效日期：2026-04-12
+> 负责人：待定
+
+## 变更记录
+
+| 版本号 | 日期 | 变更人 | 变更说明 |
+| --- | --- | --- | --- |
+| v0.1.0 | 2026-04-12 | Codex | 创建任务索引与总看板。 |
+
+## 分类说明
+- 面向任务拆解、执行计划、责任分配、阻塞管理和完成标准定义。
+
+## 包含文档
+- [T01 示例总计划](./T01-example-plan.md)
+- [T02 示例验收清单](./T02-example-checklist.md)
+- [T03 示例协作边界](./T03-example-collaboration.md)
+- [T04 示例执行任务](./T04-example-execution.md)
+
+## 派单规则
+- 一次只认领一个执行主文档。
+- 接手时必须更新对应文档中的执行 owner 和交接记录。
+- 执行前先检查预计输入和外部依赖。
+- 完成后先更新执行文档，再回写 `T00`。
+
+## 总看板视图
+
+| Task | 主责域 | 当前执行状态 | 当前执行 owner | 优先级 | ETA | 实际完成时间 | 主要输入 | 主要输出 | 当前阻塞 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `T04` | 示例领域 | 未开始 | `example-agent` | P0 | 2026-04-14 | 待完成 | 输入 A、输入 B | 输出 A、输出 B | 阻塞项待处理 |
+
+## 按 owner 聚合视图
+
+| Owner | 负责任务 | 当前状态 | 近期目标 | 主要阻塞 |
+| --- | --- | --- | --- | --- |
+| `example-agent` | `T04` | 未开始 | 完成示例任务 | 阻塞项待处理 |
+
+## 按阻塞聚合视图
+
+| 阻塞主题 | 影响任务 | 当前状态 | 责任 owner | 处理方向 |
+| --- | --- | --- | --- | --- |
+| 契约未冻结 | `T04` | 待处理 | `example-agent` | 先完成契约冻结 |
+
+## 推荐执行顺序
+1. 阅读 `T03` 协作规则。
+2. 完成前置冻结任务。
+3. 并行执行稳定责任域任务。
+4. 最后汇总联调和验收结论。
+```
+
+## 8.3 Full T03 collaboration-boundary template
+
+Use this when multiple people or agents will maintain the task system in parallel.
+
+```md
+# Agent 协作边界与维护规则
+
+> 文档编号：T03
+> 状态：草案
+> 版本号：v0.1.0
+> 最后更新时间：2026-04-12
+> 审核人：待定
+> 生效日期：2026-04-12
+> 负责人：项目经理
+
+## 变更记录
+
+| 版本号 | 日期 | 变更人 | 变更说明 |
+| --- | --- | --- | --- |
+| v0.1.0 | 2026-04-12 | Codex | 创建协作边界与回写规则。 |
+
+## 文档目的
+## 目标读者
+## 关联文档
+## 任务背景
+## 任务范围
+
+## 分片原则
+- 一个执行文档只负责一个稳定能力域。
+- 总览文档不承载一线执行细节。
+- 同一类交付物只能有一个主责文档。
+
+## 主责矩阵
+
+| 文档 | 主责范围 | 上游输入 | 下游输出 | 主维护人 |
+| --- | --- | --- | --- | --- |
+| `T04` | 示例责任域 | 上游输入 | 下游输出 | `example-agent` |
+
+## Agent 执行规则
+
+| 规则编号 | 规则 |
+| --- | --- |
+| R1 | 一次只认领一份主执行文档。 |
+| R2 | 先更新自己的执行文档，再更新总览。 |
+| R3 | 外部问题先登记依赖，不直接改写其他任务文档。 |
+
+## 回写顺序
+1. 更新主责任务文档。
+2. 更新 `T01` 或 `T02`。
+3. 更新 `T00`。
+
+## 完成标准
+- 各执行文档主责唯一。
+- 回写顺序明确。
+- 多 agent 可并行维护且不交叉覆盖。
+```
+
+## 8.4 Full T04+ execution-doc template
+
+Use this for execution docs that will be directly assigned to an agent.
+
+```md
+# 标题
+
+> 文档编号：T04
+> 状态：草案
+> 版本号：v0.1.0
+> 最后更新时间：2026-04-12
+> 审核人：待定
+> 生效日期：2026-04-12
+> 负责人：后端负责人
+
+## 变更记录
+
+| 版本号 | 日期 | 变更人 | 变更说明 |
+| --- | --- | --- | --- |
+| v0.1.0 | 2026-04-12 | Codex | 创建首版执行任务文档。 |
+
+## 执行状态
+- 当前状态：未开始
+- 可选状态：未开始 / 进行中 / 阻塞 / 已完成
+
+## 执行 owner
+- owner 角色：后端负责人
+- 当前执行 owner：`example-agent`
+- 备援 owner：待分配
+- 协作角色：前端负责人、测试负责人
+- owner 变更要求：变更执行人时同步更新本节和交接记录。
+
+## 执行排期
+- 优先级：P0
+- ETA：2026-04-14
+- 实际完成时间：待完成
+- 排期维护要求：排期变化时同步更新 `T00`。
+
+## 文档目的
+## 目标读者
+## 关联文档
+## 任务背景
+## 任务范围
+
+### 负责范围
+### 不负责范围
+
+## Agent 执行边界
+
+### 允许维护
+### 禁止越界
+
+## 预计输入
+## 预计输出
+## 允许修改的代码目录
+
+| 目录 | 用途 | 当前状态 |
+| --- | --- | --- |
+| `path/example/` | 示例占位 | 待创建 |
+
+## 外部依赖登记表
+
+| 编号 | 依赖项 | 来源任务/文档 | 当前状态 | 阻塞影响 | 下一步 |
+| --- | --- | --- | --- | --- | --- |
+| D-04-01 | 示例依赖 | `T03` | 待确认 | 影响执行 | 跟进确认 |
+
+## agent 接手说明
+1. 接手前检查边界和输入。
+2. 开始执行时更新执行状态和交接记录。
+3. 发现跨任务问题时先登记依赖。
+4. 交接前写明完成项、阻塞项和下步建议。
+
+## 交接记录
+
+| 日期 | 交接人 | 接手内容 | 当前状态 | 备注 |
+| --- | --- | --- | --- | --- |
+| 2026-04-12 | Codex | 初始化执行模板 | 未开始 | 待执行人接手 |
+
+## 交付物
+## 任务拆解
+
+| 子任务编号 | 子状态 | 子任务 | 执行 owner | 预计输入 | 预计输出 | Done Criteria |
+| --- | --- | --- | --- | --- | --- | --- |
+| T04-01 | 未开始 | 示例子任务 | `example-agent` | 输入 A | 输出 A | 可验证完成条件 |
+
+## 依赖与阻塞
+## 状态跟踪
+## 完成标准
+```
+
+## 8.5 Repo-specific playbook
+
+Use this repository's current task-doc system as the default playbook unless the user explicitly wants a redesign.
+
+### Current recommended layout
+
+| Doc | Role in this repo |
+| --- | --- |
+| `T00` | active dashboard, dispatch rules, owner view, blocker view |
+| `T01` | phased delivery umbrella plan |
+| `T02` | integration and acceptance umbrella checklist |
+| `T03` | collaboration-boundary and maintenance-rule doc |
+| `T04` | spec, contract, and data-model freeze |
+| `T05` | frontend user app, H5, and admin |
+| `T06` | backend auth, family, baby, and event core |
+| `T07` | summary, alerts, and async jobs |
+| `T08` | AI, export, and sharing |
+| `T09` | ops, security, and release readiness |
+| `T10` | quality, integration, and acceptance execution |
+
+### Repo-specific operating rules
+- Prefer extending `T04` to `T10` rather than creating overlapping new execution docs.
+- Keep `T01` and `T02` as umbrella docs, not as the primary execution surface.
+- Use `T03` for cross-task agent coordination rules rather than repeating them in every task doc.
+- Update `T00` when owner, ETA, execution status, or blocker state materially changes.
+- If real assignees are unknown, initialize role-based agent names and replace them later.
+
+### Default role-based agent names in this repo
+- `spec-agent`
+- `frontend-agent`
+- `backend-core-agent`
+- `backend-async-agent`
+- `ai-report-agent`
+- `ops-agent`
+- `qa-agent`
+
 ## 9. Update checklist
 
 When adding a task doc:
@@ -388,3 +632,16 @@ When task docs are used by multiple agents:
 - blockers should be recorded as dependencies, not solved by editing other task docs
 - `T00` should summarize, not replace, execution detail
 - umbrella docs should not become the primary working surface once execution docs exist
+
+## 12. Refactor-current-task-docs workflow
+
+Use this workflow when existing `docs/task` content needs to be upgraded into an assignment-ready system:
+
+1. classify every current `T` doc by role: index, umbrella, boundary, or execution
+2. identify overlapping ownership and mixed-scope docs
+3. split mixed docs into stable responsibility slices
+4. upgrade execution docs with assignment-ready sections
+5. normalize subtask tables to include `子状态` and `Done Criteria`
+6. initialize execution owners and ETAs
+7. upgrade `T00` into an active dashboard
+8. verify that execution detail lives in execution docs, not umbrella docs

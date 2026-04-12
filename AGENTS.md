@@ -41,7 +41,7 @@
 - `git diff -- docs`：在提交前检查文档改动
 - `sed -n '1,120p' docs/specs/S01-openapi.yaml`：分段查看规格文件修改
 - `find .agents/skills -maxdepth 3 -type f | sort`：查看当前启用的治理技能集合
-- `pnpm install`：前端工程依赖安装（如 `miniapp/`、`web/`、`admin/`）
+- `pnpm install`：前端工程依赖安装（如 `frontend/miniapp/`、`frontend/web/`、`frontend/admin/`）
 - `uv sync`：Python 工程依赖同步（如 `backend/`、`worker/`）
 
 如果后续加入可运行的服务，请用真实项目命令更新本指南，而不是保留占位说明。

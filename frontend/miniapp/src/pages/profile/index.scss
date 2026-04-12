@@ -1,0 +1,31 @@
+.profile-page {
+  .login-card,
+  .create-baby-card,
+  .user-card {
+    padding: 24rpx;
+  }
+
+  .hint {
+    display: block;
+    margin-bottom: 16rpx;
+    color: var(--text-sub);
+    font-size: 24rpx;
+  }
+
+  .user-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10rpx;
+  }
+
+  .user-name {
+    display: block;
+    font-size: 32rpx;
+    font-weight: 700;
+  }
+
+  .picker-like {
+    line-height: 1.6;
+    color: var(--text-main);
+  }
+}

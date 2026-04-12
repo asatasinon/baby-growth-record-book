@@ -40,8 +40,16 @@ export default defineConfig({
   projectName: 'baby-growth-miniapp',
   date: '2026-04-12',
   designWidth: 750,
+  deviceRatio: {
+    640: 2.34 / 2,
+    750: 1,
+    828: 1.81 / 2
+  },
   sourceRoot: 'src',
   outputRoot: 'dist',
+  alias: {
+    '@': path.resolve(__dirname, '..', 'src')
+  },
   plugins: ['@tarojs/plugin-framework-react'],
   framework: 'react',
   compiler: {

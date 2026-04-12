@@ -1,0 +1,61 @@
+.trends-page {
+  .metric-row {
+    margin-top: 12rpx;
+  }
+
+  .trend-summary {
+    margin-top: 18rpx;
+    padding: 22rpx;
+  }
+
+  .metric-overview {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12rpx;
+  }
+
+  .overview-value {
+    display: block;
+    margin-top: 8rpx;
+    font-size: 34rpx;
+    font-weight: 700;
+    color: #0f4a9b;
+  }
+
+  .chart-card {
+    margin-top: 16rpx;
+    padding: 22rpx;
+  }
+
+  .chart-row {
+    display: grid;
+    grid-template-columns: 84rpx 1fr auto;
+    gap: 12rpx;
+    align-items: center;
+    margin-bottom: 14rpx;
+  }
+
+  .chart-date {
+    color: var(--text-sub);
+    font-size: 22rpx;
+  }
+
+  .track {
+    height: 18rpx;
+    border-radius: 999rpx;
+    background: #dce8fb;
+    overflow: hidden;
+  }
+
+  .bar {
+    height: 100%;
+    border-radius: 999rpx;
+    background: linear-gradient(90deg, #1d8ce0, #4f46e5);
+  }
+
+  .chart-value {
+    min-width: 100rpx;
+    text-align: right;
+    font-size: 24rpx;
+  }
+}

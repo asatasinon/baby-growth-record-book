@@ -1,9 +1,326 @@
-import { Text, View } from '@tarojs/components'
+import { useMemo, useState } from 'react'
+import Taro, { useDidShow } from '@tarojs/taro'
+import { Button, Input, Text, View } from '@tarojs/components'
+
+import { EVENT_TYPE_LABEL_MAP, EXCRETION_LABEL_MAP, QUICK_EVENT_TYPES } from '@/constants/event'
+import { createEvent, getDailySummary } from '@/services/api'
+import { getActiveBabyId, getActiveFamilyId, getSession } from '@/services/storage'
+import type { DailySummary, EventType } from '@/types/domain'
+import { formatDateTime, formatMinutes, resolveTimezone, startOfDayMs } from '@/utils/time'
+
+import './index.scss'
+
+interface ReadyContext {
+  sessionToken: string
+  familyId: string
+  babyId: string
+}
+
+function resolveReadyContext(): ReadyContext | null {
+  const session = getSession()
+  if (!session) {
+    return null
+  }
+
+  const familyId = getActiveFamilyId(session)
+  const babyId = getActiveBabyId()
+
+  if (!familyId || !babyId) {
+    return null
+  }
+
+  return {
+    sessionToken: session.access_token,
+    familyId,
+    babyId
+  }
+}
 
 export default function HomePage() {
+  const [summary, setSummary] = useState<DailySummary | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [quickType, setQuickType] = useState<EventType>('feeding')
+
+  const [feedingVolume, setFeedingVolume] = useState('90')
+  const [excretionType, setExcretionType] = useState('urine')
+  const [sleepMinutes, setSleepMinutes] = useState('60')
+  const [weightG, setWeightG] = useState('4000')
+  const [temperatureC, setTemperatureC] = useState('')
+  const [notes, setNotes] = useState('')
+
+  async function loadSummary(): Promise<void> {
+    const context = resolveReadyContext()
+    if (!context) {
+      setSummary(null)
+      return
+    }
+
+    const session = getSession()
+    if (!session) {
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const data = await getDailySummary({
+        session,
+        familyId: context.familyId,
+        babyId: context.babyId,
+        date: startOfDayMs()
+      })
+      setSummary(data)
+    } catch (error) {
+      Taro.showToast({ title: (error as Error).message || '加载今日汇总失败', icon: 'none' })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useDidShow(() => {
+    void loadSummary()
+  })
+
+  const latestWeightText = useMemo(() => {
+    const weight = summary?.last_measurement_snapshot?.weight_g
+    if (typeof weight === 'number') {
+      return `${weight} g`
+    }
+    if (typeof weight === 'string' && weight.trim()) {
+      return `${weight} g`
+    }
+    return '暂无'
+  }, [summary])
+
+  async function submitQuickRecord(): Promise<void> {
+    const session = getSession()
+    const context = resolveReadyContext()
+
+    if (!session || !context) {
+      Taro.showToast({ title: '请先在“我的”页面登录并选择宝宝', icon: 'none' })
+      return
+    }
+
+    let payload: Record<string, unknown>
+
+    if (quickType === 'feeding') {
+      const volume = Number(feedingVolume)
+      if (!Number.isFinite(volume) || volume <= 0) {
+        Taro.showToast({ title: '请输入有效喂养毫升数', icon: 'none' })
+        return
+      }
+      payload = {
+        mode: 'bottle',
+        volume,
+        unit: 'ml'
+      }
+    } else if (quickType === 'excretion') {
+      payload = {
+        excretion_type: excretionType || 'unknown'
+      }
+    } else if (quickType === 'sleep') {
+      const duration = Number(sleepMinutes)
+      if (!Number.isFinite(duration) || duration <= 0) {
+        Taro.showToast({ title: '请输入有效睡眠分钟数', icon: 'none' })
+        return
+      }
+      payload = {
+        duration_minutes: duration
+      }
+    } else {
+      const nextPayload: Record<string, unknown> = {}
+      const weight = Number(weightG)
+      if (Number.isFinite(weight) && weight > 0) {
+        nextPayload.weight_g = weight
+      }
+      const temperature = Number(temperatureC)
+      if (Number.isFinite(temperature) && temperature > 0) {
+        nextPayload.temperature_c = temperature
+      }
+
+      if (Object.keys(nextPayload).length === 0) {
+        Taro.showToast({ title: '请至少填写体重或体温', icon: 'none' })
+        return
+      }
+      payload = nextPayload
+    }
+
+    setIsSubmitting(true)
+    try {
+      await createEvent({
+        session,
+        familyId: context.familyId,
+        babyId: context.babyId,
+        eventType: quickType,
+        occurredAt: Date.now(),
+        notes: notes.trim() || undefined,
+        payload: {
+          ...payload,
+          timezone: resolveTimezone()
+        }
+      })
+
+      setNotes('')
+      Taro.showToast({ title: '记录成功', icon: 'success' })
+      await loadSummary()
+    } catch (error) {
+      Taro.showToast({ title: (error as Error).message || '记录失败', icon: 'none' })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (!resolveReadyContext()) {
+    return (
+      <View className='page-shell home-page'>
+        <View className='card empty-card'>
+          <Text className='empty-title'>先完成登录与宝宝选择</Text>
+          <Text className='muted'>MVP 已接入真实 API，请在“我的”页面先登录并创建或选择宝宝。</Text>
+          <Button className='btn-primary' onClick={() => Taro.switchTab({ url: '/pages/profile/index' })}>
+            前往我的
+          </Button>
+        </View>
+      </View>
+    )
+  }
+
   return (
-    <View style={{ padding: '32rpx' }}>
-      <Text>首页：家庭切换、今日汇总、快速记录入口。</Text>
+    <View className='page-shell home-page'>
+      <View className='card summary-card'>
+        <View className='h-stack'>
+          <Text className='summary-title'>今日摘要</Text>
+          <Text className='muted'>{isLoading ? '加载中...' : '实时更新'}</Text>
+        </View>
+        <View className='metrics-grid'>
+          <View className='metric-item'>
+            <Text className='metric-label'>喂养总量</Text>
+            <Text className='metric-value'>{summary?.feeding_total_ml ?? 0} ml</Text>
+          </View>
+          <View className='metric-item'>
+            <Text className='metric-label'>排泄次数</Text>
+            <Text className='metric-value'>{summary?.excretion_count_total ?? 0} 次</Text>
+          </View>
+          <View className='metric-item'>
+            <Text className='metric-label'>睡眠时长</Text>
+            <Text className='metric-value'>{formatMinutes(summary?.sleep_total_minutes ?? 0)}</Text>
+          </View>
+          <View className='metric-item'>
+            <Text className='metric-label'>最近体重</Text>
+            <Text className='metric-value'>{latestWeightText}</Text>
+          </View>
+        </View>
+      </View>
+
+      <Text className='section-title'>快速记录</Text>
+      <View className='pill-row'>
+        {QUICK_EVENT_TYPES.map((type) => (
+          <View
+            key={type}
+            className={`pill ${quickType === type ? 'active' : ''}`}
+            onClick={() => setQuickType(type)}
+          >
+            <Text>{EVENT_TYPE_LABEL_MAP[type]}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View className='card quick-form-card'>
+        {quickType === 'feeding' && (
+          <View className='form-item'>
+            <Text className='form-label'>喂养毫升数</Text>
+            <Input
+              className='input'
+              type='number'
+              value={feedingVolume}
+              onInput={(event) => setFeedingVolume(event.detail.value)}
+              placeholder='例如 90'
+            />
+          </View>
+        )}
+
+        {quickType === 'excretion' && (
+          <View className='form-item'>
+            <Text className='form-label'>排泄类型</Text>
+            <View className='pill-row'>
+              {['urine', 'stool', 'mixed'].map((item) => (
+                <View
+                  key={item}
+                  className={`pill ${excretionType === item ? 'active' : ''}`}
+                  onClick={() => setExcretionType(item)}
+                >
+                  <Text>{EXCRETION_LABEL_MAP[item]}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {quickType === 'sleep' && (
+          <View className='form-item'>
+            <Text className='form-label'>睡眠分钟数</Text>
+            <Input
+              className='input'
+              type='number'
+              value={sleepMinutes}
+              onInput={(event) => setSleepMinutes(event.detail.value)}
+              placeholder='例如 75'
+            />
+          </View>
+        )}
+
+        {quickType === 'measurement' && (
+          <View>
+            <View className='form-item'>
+              <Text className='form-label'>体重（g）</Text>
+              <Input
+                className='input'
+                type='number'
+                value={weightG}
+                onInput={(event) => setWeightG(event.detail.value)}
+                placeholder='例如 5300'
+              />
+            </View>
+            <View className='form-item'>
+              <Text className='form-label'>体温（℃，可选）</Text>
+              <Input
+                className='input'
+                type='digit'
+                value={temperatureC}
+                onInput={(event) => setTemperatureC(event.detail.value)}
+                placeholder='例如 36.7'
+              />
+            </View>
+          </View>
+        )}
+
+        <View className='form-item'>
+          <Text className='form-label'>备注（可选）</Text>
+          <Input
+            className='input'
+            value={notes}
+            onInput={(event) => setNotes(event.detail.value)}
+            placeholder='例如 夜间喂养'
+          />
+        </View>
+
+        <Button className='btn-primary' loading={isSubmitting} onClick={submitQuickRecord}>
+          提交 {EVENT_TYPE_LABEL_MAP[quickType]} 记录
+        </Button>
+      </View>
+
+      <Text className='section-title'>提醒</Text>
+      <View className='card alerts-card'>
+        {summary?.alerts?.length ? (
+          summary.alerts.slice(0, 3).map((alert) => (
+            <View key={alert.id} className='alert-item'>
+              <Text className='alert-title'>{alert.title}</Text>
+              <Text className='muted'>{formatDateTime(alert.triggered_at)}</Text>
+            </View>
+          ))
+        ) : (
+          <Text className='muted'>当前没有提醒，继续保持。</Text>
+        )}
+      </View>
     </View>
   )
 }

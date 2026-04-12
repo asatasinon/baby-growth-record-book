@@ -1,0 +1,32 @@
+.records-page {
+  .records-list {
+    margin-top: 18rpx;
+    display: flex;
+    flex-direction: column;
+    gap: 14rpx;
+  }
+
+  .event-card {
+    padding: 20rpx;
+  }
+
+  .event-summary {
+    display: block;
+    margin-top: 14rpx;
+    font-size: 28rpx;
+    font-weight: 700;
+  }
+
+  .event-notes {
+    display: block;
+    margin-top: 8rpx;
+    color: var(--text-sub);
+    font-size: 24rpx;
+  }
+
+  .event-actions {
+    margin-top: 14rpx;
+    display: flex;
+    justify-content: flex-end;
+  }
+}

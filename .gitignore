@@ -61,6 +61,7 @@ web_modules/
 
 # Output of 'npm pack'
 *.tgz
+package-lock.json
 
 # Yarn Integrity file
 .yarn-integrity
@@ -139,3 +140,10 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 .idea
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Local tooling
+.DS_Store

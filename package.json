@@ -1,0 +1,12 @@
+{
+  "name": "baby-growth-record-book",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev:miniapp": "pnpm --filter @baby-growth/miniapp dev:weapp",
+    "dev:web": "pnpm --filter @baby-growth/web dev",
+    "dev:admin": "pnpm --filter @baby-growth/admin dev",
+    "build:web": "pnpm --filter @baby-growth/web build",
+    "build:admin": "pnpm --filter @baby-growth/admin build"
+  }
+}

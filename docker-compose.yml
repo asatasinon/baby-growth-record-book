@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: baby-growth-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-baby_growth}
+      POSTGRES_USER: ${DB_USER:-baby_growth}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-baby_growth}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docs/specs/S02-db-schema.sql:/docker-entrypoint-initdb.d/S02-db-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-baby_growth}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+    container_name: baby-growth-api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./worker
+    container_name: baby-growth-worker
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: baby-growth-nginx
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  postgres_data:

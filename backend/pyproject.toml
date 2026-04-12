@@ -1,0 +1,27 @@
+[project]
+name = "baby-growth-api"
+version = "0.1.0"
+description = "Baby growth record API service"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "pydantic-settings>=2.6.0",
+  "sqlalchemy>=2.0.35",
+  "psycopg[binary]>=3.2.0",
+  "python-json-logger>=2.0.7",
+  "uvicorn[standard]>=0.31.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28.1",
+  "pytest>=8.3.3",
+  "ruff>=0.6.8"
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

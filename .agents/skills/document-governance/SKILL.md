@@ -22,7 +22,7 @@ Read [references/doc-governance-merged-standard.md](./references/doc-governance-
 1. Identify the document's primary category.
    Categories are `product`, `architecture`, `design`, `quality`, and `specs`.
    Choose the category by the document's main job, not by incidental content.
-   If the user is asking for task execution documents, switch to `task-doc-management`.
+   If the user is asking for task execution documents, task dashboards, owner/blocker views, multi-agent handoff rules, or assignment-ready `T` docs, switch to `task-doc-management`.
 
 2. Apply the directory and numbering system.
    Use `P/A/D/Q/S` prefixes for the categories this skill owns.
@@ -114,3 +114,7 @@ Action: Use this skill to merge overlapping standards, write a governed spec set
 **Example 3**
 Input: "我要新增一个迭代执行计划文档。"
 Action: 遇到真正的任务执行文档，请切换到 `task-doc-management`。
+
+**Example 4**
+Input: "帮我把任务文档改成 agent 可并行维护的格式。"
+Action: 这属于 `T` 类执行体系，请切换到 `task-doc-management`，不要在 `document-governance` 中重复维护任务执行规则。

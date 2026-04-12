@@ -2,7 +2,7 @@
 
 > 文档编号：DOC-ROOT
 > 状态：草案
-> 版本号：v0.1.0
+> 版本号：v0.3.0
 > 最后更新时间：2026-04-12
 > 审核人：待定
 > 生效日期：2026-04-12
@@ -13,6 +13,8 @@
 | 版本号 | 日期 | 变更人 | 变更说明 |
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-12 | Codex | 初始化文档结构、分类、编号与元信息模板。 |
+| v0.2.0 | 2026-04-12 | Codex | 补充任务类执行计划与联调验收清单索引。 |
+| v0.3.0 | 2026-04-12 | Codex | 补充可供多 agent 并行执行的细分任务文档索引。 |
 
 ## 文档目的
 - 为 `baby-growth-record-book` 提供一套可直接用于立项评审、研发开工、联调测试和容器化部署的完整文档。
@@ -54,6 +56,16 @@
 
 ### 任务类
 - [T00 任务类文档索引](./task/README.md)
+- [T01 阶段性交付执行计划](./task/T01-phased-delivery-plan.md)
+- [T02 联调与验收任务清单](./task/T02-integration-and-acceptance-checklist.md)
+- [T03 Agent 协作边界与维护规则](./task/T03-agent-collaboration-boundaries.md)
+- [T04 规格基线与数据契约执行任务](./task/T04-spec-baseline-and-data-contract.md)
+- [T05 用户端与后台前端执行任务](./task/T05-frontend-user-app-and-admin.md)
+- [T06 账户、家庭与核心领域后端执行任务](./task/T06-backend-auth-family-and-events.md)
+- [T07 汇总、提醒与异步任务执行任务](./task/T07-summary-alerts-and-async-jobs.md)
+- [T08 AI、导出与分享执行任务](./task/T08-ai-export-and-sharing.md)
+- [T09 部署、安全与发布准备执行任务](./task/T09-ops-security-and-release-readiness.md)
+- [T10 测试、联调与验收执行任务](./task/T10-quality-integration-and-acceptance-execution.md)
 
 ### 质量与验收类
 - [Q01 测试与验收](./quality/Q01-testing-and-acceptance.md)
@@ -69,6 +81,7 @@
 3. 研发侧依次阅读架构类中的 [A01 系统架构](./architecture/A01-system-architecture.md)，以及设计类中的 [D03 接口设计](./design/D03-api-design.md)、[D04 领域数据模型](./design/D04-domain-data-model.md)、[D05 数据库设计](./design/D05-database-design.md)。
 4. AI、部署、安全、测试分别对应 [D06 AI 与规则引擎](./design/D06-ai-and-rule-engine.md)、[A02 部署与运维](./architecture/A02-deployment-and-ops.md)、[A03 安全与合规](./architecture/A03-security-and-compliance.md)、[Q01 测试与验收](./quality/Q01-testing-and-acceptance.md)。
 5. 迭代排期与阶段目标参考产品类中的 [P03 Roadmap](./product/P03-roadmap.md)。
+6. 需要进入研发执行和验收推进时，先读 [T03 Agent 协作边界与维护规则](./task/T03-agent-collaboration-boundaries.md)，再按任务域进入 [T04](./task/T04-spec-baseline-and-data-contract.md) 至 [T10](./task/T10-quality-integration-and-acceptance-execution.md)。
 
 ## 关键决策摘要
 - 产品形态：多家庭 SaaS，首发聚焦微信小程序，同时复用能力到 H5 和基础管理后台。

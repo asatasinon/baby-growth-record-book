@@ -10,6 +10,7 @@
 
 ```bash
 cd backend
+cp .env.example .env
 uv sync --extra dev
 uv run python main.py
 ```
@@ -19,6 +20,7 @@ uv run python main.py
 ## 启动配置
 
 - 启动参数默认读取 `config/server.toml`
+- 业务与基础设施配置统一读取 `backend/.env`
 - 可用环境变量 `APP_CONFIG_FILE` 指定其他配置文件路径
 - `API_HOST/API_PORT/API_RELOAD/API_LOG_LEVEL/API_WORKERS` 可作为覆盖项
 

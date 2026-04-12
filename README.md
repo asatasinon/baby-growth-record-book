@@ -17,6 +17,7 @@
 ## 前端（pnpm）
 
 ```bash
+cp frontend/.env.example frontend/.env
 pnpm install
 pnpm dev:miniapp   # 小程序开发模式
 pnpm dev:h5        # H5 开发模式（来自 miniapp）
@@ -37,6 +38,7 @@ pnpm lint           # backend/worker lint + frontend build 校验
 
 ```bash
 cd backend
+cp .env.example .env
 uv sync
 uv run python main.py
 ```
@@ -52,8 +54,9 @@ uv run python -m app.main
 ## 容器启动
 
 ```bash
+cp frontend/.env.example frontend/.env
+cp backend/.env.example backend/.env
 pnpm build:h5
-cp .env.example .env
 docker compose up --build
 ```
 

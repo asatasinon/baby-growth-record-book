@@ -10,6 +10,8 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
+BACKEND_ROOT = Path(__file__).resolve().parents[2]
+
 
 class Settings(BaseSettings):
     app_env: str = Field(default="local", alias="APP_ENV")
@@ -40,7 +42,7 @@ class Settings(BaseSettings):
     api_workers: int = Field(default=1, alias="API_WORKERS")
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(BACKEND_ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
         populate_by_name=True,
@@ -55,7 +57,8 @@ class Settings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        config_file = getenv("APP_CONFIG_FILE", "config/server.toml")
+        default_config = BACKEND_ROOT / "config" / "server.toml"
+        config_file = getenv("APP_CONFIG_FILE", str(default_config))
         toml_file = Path(config_file)
         toml_settings = TomlConfigSettingsSource(settings_cls, toml_file=toml_file)
         return (

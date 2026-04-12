@@ -275,6 +275,23 @@ Avoid:
 - missing done criteria
 - mixing broad product strategy with execution details
 
+## 7.1 Anti-patterns
+
+Avoid these task-doc anti-patterns because they commonly cause cross-execution or cross-maintenance problems:
+
+| Anti-pattern | Why it is harmful | Preferred correction |
+| --- | --- | --- |
+| umbrella docs become the primary working surface | execution detail drifts away from the real owner doc | keep umbrella docs summary-only and push detail into execution docs |
+| one execution doc mixes frontend, backend, ops, and QA ownership | multiple agents need to edit the same doc constantly | split by stable execution boundary |
+| two execution docs claim the same deliverable | ownership becomes ambiguous and conflict-prone | assign one clear primary owner and record the rest as dependencies |
+| subtask rows have no `Done Criteria` | completion becomes subjective and hard to audit | require observable completion conditions |
+| execution docs omit `预计输入` and `预计输出` | agents make hidden assumptions and handoff quality drops | state concrete upstream inputs and downstream outputs explicitly |
+| execution docs omit `允许修改的代码目录` | write scope becomes unclear and overlap risk rises | define write scope before implementation |
+| blockers are solved by editing another task doc directly | maintenance boundaries collapse | record the blocker locally, then escalate through the agreed handoff path |
+| execution statuses are written into metadata `状态` | lifecycle governance and execution tracking become mixed | keep lifecycle status in metadata and execution status in a separate section |
+| `T00` is not updated after owner/ETA/blocker changes | dispatch and portfolio view become stale | update `T00` after material execution changes |
+| numbering is changed casually during refactor | links, references, and history become unstable | preserve numbering unless there is a strong migration reason |
+
 ## 8. Example minimal template
 
 ```md
@@ -645,3 +662,4 @@ Use this workflow when existing `docs/task` content needs to be upgraded into an
 6. initialize execution owners and ETAs
 7. upgrade `T00` into an active dashboard
 8. verify that execution detail lives in execution docs, not umbrella docs
+9. run `task-doc-checklist.md` before closing the refactor

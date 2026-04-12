@@ -18,6 +18,7 @@ This skill is for:
 - Updating task indexes when new T-category docs are added
 
 Read [references/task-doc-standard.md](./references/task-doc-standard.md) before creating or restructuring task documentation.
+Use [references/task-doc-checklist.md](./references/task-doc-checklist.md) before closing task-doc work or reporting that the task-doc system is ready.
 
 ## Default workflow
 
@@ -65,6 +66,9 @@ Read [references/task-doc-standard.md](./references/task-doc-standard.md) before
 8. Update navigation if the task doc set changes.
    When you add a visible task document, update `docs/task/README.md`.
    Update `docs/README.md` if the task doc should appear in the top-level navigation.
+
+9. Run the checklist before closing.
+   Use `references/task-doc-checklist.md` to verify classification, ownership, dashboard coverage, anti-overlap, and navigation consistency.
 
 ## Refactor workflow
 
@@ -239,6 +243,17 @@ If the user needs default owners before real names exist, initialize role-based 
 - `ai-report-agent`
 - `ops-agent`
 - `qa-agent`
+
+## Anti-pattern reminders
+
+Watch for these failure modes:
+- umbrella docs becoming the primary working surface after execution docs already exist
+- one execution doc covering multiple unrelated responsibility domains
+- two execution docs claiming the same deliverable or same code area as primary ownership
+- missing `Done Criteria`, causing subjective completion claims
+- updating other execution docs directly instead of recording dependencies and blockers
+- putting execution statuses like `进行中` into metadata `状态`
+- leaving `T00` stale after owners, ETAs, or blockers changed
 
 ## Example trigger cases
 

@@ -19,14 +19,12 @@ uv run python main.py
 
 ## 启动配置
 
-- 启动参数默认读取 `config/server.toml`
-- 业务与基础设施配置统一读取 `backend/.env`
-- 可用环境变量 `APP_CONFIG_FILE` 指定其他配置文件路径
+- 启动参数与业务配置统一读取 `backend/.env`
 - `API_HOST/API_PORT/API_RELOAD/API_LOG_LEVEL/API_WORKERS` 可作为覆盖项
 
 ## 目录
 
-- `main.py`: 服务启动入口（读取 `config/server.toml` 并启动 uvicorn）
+- `main.py`: 服务启动入口（读取 `backend/.env` 并启动 uvicorn）
 - `app/main.py`: 应用入口
 - `app/api/router.py`: v1 路由聚合
 - `app/core/`: 配置、错误、响应包装、数据库健康检查

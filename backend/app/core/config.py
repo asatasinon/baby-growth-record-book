@@ -1,14 +1,8 @@
 from functools import lru_cache
-from os import getenv
 from pathlib import Path
 
 from pydantic import Field
-from pydantic_settings import (
-    BaseSettings,
-    PydanticBaseSettingsSource,
-    SettingsConfigDict,
-    TomlConfigSettingsSource,
-)
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
@@ -47,27 +41,6 @@ class Settings(BaseSettings):
         extra="ignore",
         populate_by_name=True,
     )
-
-    @classmethod
-    def settings_customise_sources(
-        cls,
-        settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> tuple[PydanticBaseSettingsSource, ...]:
-        default_config = BACKEND_ROOT / "config" / "server.toml"
-        config_file = getenv("APP_CONFIG_FILE", str(default_config))
-        toml_file = Path(config_file)
-        toml_settings = TomlConfigSettingsSource(settings_cls, toml_file=toml_file)
-        return (
-            init_settings,
-            env_settings,
-            dotenv_settings,
-            toml_settings,
-            file_secret_settings,
-        )
 
     @property
     def db_dsn(self) -> str:

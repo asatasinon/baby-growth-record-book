@@ -9,6 +9,5 @@ RUN uv sync
 
 COPY app ./app
 COPY main.py ./main.py
-COPY config ./config
 
 CMD ["uv", "run", "python", "main.py"]

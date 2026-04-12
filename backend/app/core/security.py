@@ -1,3 +1,7 @@
+import base64
+import hashlib
+import hmac
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -13,6 +17,9 @@ _bearer = HTTPBearer(auto_error=False)
 _ALGORITHM = "HS256"
 _ACCESS_TOKEN_TTL_MINUTES = 60 * 24
 _REFRESH_TOKEN_TTL_DAYS = 30
+_PASSWORD_ALGORITHM = "pbkdf2_sha256"
+_PASSWORD_ITERATIONS = 120_000
+_PASSWORD_SALT_BYTES = 16
 
 
 def create_access_token(subject: dict[str, Any]) -> str:
@@ -35,6 +42,39 @@ def create_refresh_token(subject: dict[str, Any]) -> str:
         "type": "refresh",
     }
     return jwt.encode(payload, get_settings().jwt_secret, algorithm=_ALGORITHM)
+
+
+def hash_password(password: str) -> str:
+    salt = secrets.token_bytes(_PASSWORD_SALT_BYTES)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt,
+        _PASSWORD_ITERATIONS,
+    )
+    salt_encoded = base64.urlsafe_b64encode(salt).decode("ascii")
+    digest_encoded = base64.urlsafe_b64encode(digest).decode("ascii")
+    return f"{_PASSWORD_ALGORITHM}${_PASSWORD_ITERATIONS}${salt_encoded}${digest_encoded}"
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    try:
+        algorithm, iterations_raw, salt_encoded, digest_encoded = hashed.split("$", maxsplit=3)
+        if algorithm != _PASSWORD_ALGORITHM:
+            return False
+        iterations = int(iterations_raw)
+        salt = base64.urlsafe_b64decode(salt_encoded.encode("ascii"))
+        expected_digest = base64.urlsafe_b64decode(digest_encoded.encode("ascii"))
+    except (TypeError, ValueError):
+        return False
+
+    calculated_digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt,
+        iterations,
+    )
+    return hmac.compare_digest(calculated_digest, expected_digest)
 
 
 def decode_token(token: str) -> dict[str, Any]:

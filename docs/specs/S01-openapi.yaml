@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Baby Growth Record API
-  version: 2.1.0
+  version: 2.2.0
   description: API specification for the baby growth record SaaS platform. IDs are decimal strings at API boundary and stored as bigint in database; time fields use UTC millisecond timestamps.
 servers:
   - url: /api/v1
@@ -21,13 +21,30 @@ paths:
   /auth/wechat/login:
     post:
       tags: [auth]
-      summary: Login with WeChat code
+      summary: Login with WeChat (phone-based identity)
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/WechatLoginRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /auth/password/login:
+    post:
+      tags: [auth]
+      summary: Login with phone and password (auto-register on first login)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordLoginRequest'
       responses:
         '200':
           description: success
@@ -689,14 +706,28 @@ components:
       enum: [feeding, excretion, measurement, sleep, medication, vaccine, milestone]
     WechatLoginRequest:
       type: object
-      required: [code]
+      required: [code, phone]
       properties:
         code:
           type: string
+        phone:
+          type: string
+          pattern: '^1\d{10}$'
         encrypted_phone_data:
           type: string
         iv:
           type: string
+    PasswordLoginRequest:
+      type: object
+      required: [phone, password]
+      properties:
+        phone:
+          type: string
+          pattern: '^1\d{10}$'
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
     User:
       type: object
       properties:

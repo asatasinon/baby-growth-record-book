@@ -12,6 +12,7 @@ class User(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     phone_ciphertext: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
     last_login_at: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
 

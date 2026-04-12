@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     db_user: str = Field(default="baby_growth", alias="DB_USER")
     db_password: str = Field(default="baby_growth", alias="DB_PASSWORD")
 
+    # CORS：生产环境通过环境变量覆盖为具体域名列表，用逗号分隔
+    cors_allow_origins: str = Field(default="*", alias="CORS_ALLOW_ORIGINS")
+
     object_storage_endpoint: str | None = Field(default=None, alias="OBJECT_STORAGE_ENDPOINT")
     object_storage_bucket: str | None = Field(default=None, alias="OBJECT_STORAGE_BUCKET")
     object_storage_access_key: str | None = Field(default=None, alias="OBJECT_STORAGE_ACCESS_KEY")
@@ -31,6 +34,23 @@ class Settings(BaseSettings):
             f"postgresql+psycopg://{self.db_user}:{self.db_password}"
             f"@{self.db_host}:{self.db_port}/{self.db_name}"
         )
+
+    @property
+    def db_dsn_async(self) -> str:
+        return (
+            f"postgresql+psycopg_async://{self.db_user}:{self.db_password}"
+            f"@{self.db_host}:{self.db_port}/{self.db_name}"
+        )
+
+    @property
+    def cors_origins(self) -> list[str]:
+        if self.cors_allow_origins == "*":
+            return ["*"]
+        return [o.strip() for o in self.cors_allow_origins.split(",") if o.strip()]
+
+    @property
+    def is_local(self) -> bool:
+        return self.app_env == "local"
 
 
 @lru_cache(maxsize=1)

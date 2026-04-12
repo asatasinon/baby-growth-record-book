@@ -9,14 +9,14 @@ router = APIRouter(prefix="/health", tags=["health"])
 
 
 @router.get("/live")
-def live() -> dict:
+async def live() -> dict:
     return success({"status": "live"})
 
 
 @router.get("/ready")
-def ready() -> JSONResponse:
+async def ready() -> JSONResponse:
     settings = get_settings()
-    db_ok, db_error = check_database_ready(settings.db_dsn)
+    db_ok, db_error = await check_database_ready()
 
     storage_ready = bool(
         settings.object_storage_endpoint

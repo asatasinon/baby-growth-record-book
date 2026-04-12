@@ -34,11 +34,21 @@ def list_families() -> dict:
 
 @router.post("")
 def create_family(payload: FamilyCreateRequest) -> dict:
-    return success({"id": "20002", "name": payload.name, "role": "owner", "timezone": payload.timezone})
+    return success(
+        {
+            "id": "20002",
+            "name": payload.name,
+            "role": "owner",
+            "timezone": payload.timezone,
+        }
+    )
 
 
 @router.post("/{family_id}/members")
-def create_family_member(family_id: Annotated[IdStr, Path()], payload: FamilyMemberCreateRequest) -> dict:
+def create_family_member(
+    family_id: Annotated[IdStr, Path()],
+    payload: FamilyMemberCreateRequest,
+) -> dict:
     return success(
         {
             "id": "30001",

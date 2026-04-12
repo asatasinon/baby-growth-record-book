@@ -11,6 +11,8 @@
 
 ```bash
 cd worker
-uv sync
+uv sync --extra dev
 uv run python -m app.main
 ```
+
+> 运行基线：Python `3.13`

@@ -18,7 +18,11 @@ HANDLERS = {
 def mock_fetch_jobs() -> list[TaskJob]:
     """Mock queue to keep the worker skeleton runnable before DB polling is wired."""
     return [
-        TaskJob(id="1", job_type="aggregate_daily", payload={"family_id": "20001", "baby_id": "30001"}),
+        TaskJob(
+            id="1",
+            job_type="aggregate_daily",
+            payload={"family_id": "20001", "baby_id": "30001"},
+        ),
         TaskJob(id="2", job_type="scan_alerts", payload={"family_id": "20001"}),
     ]
 
@@ -32,7 +36,10 @@ def run_forever() -> None:
         for job in jobs:
             handler = HANDLERS.get(job.job_type)
             if not handler:
-                logger.warning("worker.job.unknown", extra={"job_type": job.job_type, "job_id": job.id})
+                logger.warning(
+                    "worker.job.unknown",
+                    extra={"job_type": job.job_type, "job_id": job.id},
+                )
                 continue
 
             logger.info("worker.job.start", extra={"job_id": job.id, "job_type": job.job_type})

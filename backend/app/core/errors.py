@@ -6,7 +6,13 @@ from fastapi.responses import JSONResponse
 
 
 class AppError(Exception):
-    def __init__(self, code: str, message: str, data: dict[str, Any] | None = None, status_code: int = 400):
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        data: dict[str, Any] | None = None,
+        status_code: int = 400,
+    ):
         super().__init__(message)
         self.code = code
         self.message = message

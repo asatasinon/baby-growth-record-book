@@ -8,6 +8,12 @@
 - `worker`: Python 异步任务执行器（聚合、导出、提醒、AI 摘要）
 - `docker-compose.yml`: `nginx + h5 + api + worker + postgres` 本地部署基线
 
+## 运行时版本
+
+- Python 默认版本：`3.13`（见 [`.python-version`](/Users/raven/code/baby-growth-record-book/.python-version)）
+- 前端包管理：`pnpm`
+- Python 包管理：`uv`
+
 ## 前端（pnpm）
 
 ```bash
@@ -15,6 +21,16 @@ pnpm install
 pnpm dev:miniapp   # 小程序开发模式
 pnpm dev:h5        # H5 开发模式（来自 miniapp）
 pnpm dev:admin     # 管理后台
+```
+
+## 常用快捷指令（pnpm）
+
+```bash
+pnpm setup:python   # 安装 backend + worker 的 uv 依赖（含 dev）
+pnpm dev:backend    # 启动后端 API（uvicorn --reload）
+pnpm dev:worker     # 启动 worker
+pnpm check          # ruff check --fix（backend + worker）
+pnpm lint           # backend/worker lint + frontend build 校验
 ```
 
 ## 后端（uv）

@@ -3,10 +3,22 @@
   "private": true,
   "packageManager": "pnpm@9.12.0",
   "scripts": {
+    "setup:backend": "cd backend && uv sync --extra dev",
+    "setup:worker": "cd worker && uv sync --extra dev",
+    "setup:python": "pnpm setup:backend && pnpm setup:worker",
     "dev:miniapp": "pnpm --filter @baby-growth/miniapp dev:weapp",
     "dev:h5": "pnpm --filter @baby-growth/miniapp dev:h5",
     "dev:admin": "pnpm --filter @baby-growth/admin dev",
+    "dev:backend": "cd backend && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:worker": "cd worker && uv run python -m app.main",
     "build:h5": "pnpm --filter @baby-growth/miniapp build:h5",
-    "build:admin": "pnpm --filter @baby-growth/admin build"
+    "build:admin": "pnpm --filter @baby-growth/admin build",
+    "check:backend": "cd backend && uv run ruff check --fix app",
+    "check:worker": "cd worker && uv run ruff check --fix app",
+    "check": "pnpm check:backend && pnpm check:worker",
+    "lint:backend": "cd backend && uv run ruff check app",
+    "lint:worker": "cd worker && uv run ruff check app",
+    "lint:frontend": "pnpm --filter @baby-growth/admin build && pnpm --filter @baby-growth/miniapp build:h5",
+    "lint": "pnpm lint:backend && pnpm lint:worker && pnpm lint:frontend"
   }
 }

@@ -1,0 +1,1072 @@
+openapi: 3.1.0
+info:
+  title: Baby Growth Record API
+  version: 1.0.0
+  description: API specification for the baby growth record SaaS platform.
+servers:
+  - url: /api/v1
+tags:
+  - name: auth
+  - name: families
+  - name: babies
+  - name: events
+  - name: summaries
+  - name: analytics
+  - name: alerts
+  - name: reports
+  - name: ai
+  - name: admin
+  - name: health
+paths:
+  /auth/wechat/login:
+    post:
+      tags: [auth]
+      summary: Login with WeChat code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WechatLoginRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /families:
+    get:
+      tags: [families]
+      summary: List families for current user
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyListResponse'
+    post:
+      tags: [families]
+      summary: Create a family
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                timezone:
+                  type: string
+                  default: Asia/Shanghai
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyResponse'
+  /families/{family_id}/members:
+    post:
+      tags: [families]
+      summary: Invite or add a family member
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                invitee_phone:
+                  type: string
+                role:
+                  $ref: '#/components/schemas/FamilyRole'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyMemberResponse'
+  /families/{family_id}/members/{member_id}:
+    patch:
+      tags: [families]
+      summary: Update family member role
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - in: path
+          name: member_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  $ref: '#/components/schemas/FamilyRole'
+                status:
+                  type: string
+                  enum: [pending, active, removed]
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyMemberResponse'
+  /babies:
+    get:
+      tags: [babies]
+      summary: List babies
+      parameters:
+        - in: query
+          name: family_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BabyListResponse'
+    post:
+      tags: [babies]
+      summary: Create baby profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BabyCreateRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BabyResponse'
+  /babies/{baby_id}:
+    get:
+      tags: [babies]
+      summary: Get baby detail
+      parameters:
+        - $ref: '#/components/parameters/BabyId'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BabyResponse'
+    patch:
+      tags: [babies]
+      summary: Update baby profile
+      parameters:
+        - $ref: '#/components/parameters/BabyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BabyUpdateRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BabyResponse'
+  /events:
+    get:
+      tags: [events]
+      summary: List growth events
+      parameters:
+        - in: query
+          name: family_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: baby_id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: event_type
+          schema:
+            $ref: '#/components/schemas/EventType'
+        - in: query
+          name: date_from
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: date_to
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventListResponse'
+    post:
+      tags: [events]
+      summary: Create growth event
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCreateRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+  /events/{event_id}:
+    get:
+      tags: [events]
+      summary: Get event detail
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+    patch:
+      tags: [events]
+      summary: Update event
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventUpdateRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+    delete:
+      tags: [events]
+      summary: Soft delete event
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+  /summaries/daily:
+    get:
+      tags: [summaries]
+      summary: Get daily summary
+      parameters:
+        - in: query
+          name: family_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: baby_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: date
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailySummaryResponse'
+  /summaries/weekly:
+    get:
+      tags: [summaries]
+      summary: Get weekly summary
+      parameters:
+        - in: query
+          name: family_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: baby_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: week_start
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+  /summaries/monthly:
+    get:
+      tags: [summaries]
+      summary: Get monthly summary
+      parameters:
+        - in: query
+          name: family_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: baby_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: month
+          required: true
+          schema:
+            type: string
+            example: 2026-04
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+  /analytics/trends:
+    get:
+      tags: [analytics]
+      summary: Query trend points
+      parameters:
+        - in: query
+          name: family_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: baby_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: metric_code
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: date_from
+          required: true
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: date_to
+          required: true
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: bucket
+          required: false
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: day
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendResponse'
+  /alerts:
+    get:
+      tags: [alerts]
+      summary: List alert events
+      parameters:
+        - in: query
+          name: family_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: baby_id
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertListResponse'
+  /alerts/rules:
+    post:
+      tags: [alerts]
+      summary: Create alert rule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertRuleCreateRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+  /alerts/{alert_id}/ack:
+    patch:
+      tags: [alerts]
+      summary: Acknowledge alert
+      parameters:
+        - in: path
+          name: alert_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+  /reports/export:
+    post:
+      tags: [reports]
+      summary: Create export task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportTaskCreateRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportTaskResponse'
+  /reports/exports:
+    get:
+      tags: [reports]
+      summary: List export tasks
+      parameters:
+        - in: query
+          name: family_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+  /reports/exports/{task_id}:
+    get:
+      tags: [reports]
+      summary: Get export task detail
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportTaskResponse'
+  /ai/query:
+    post:
+      tags: [ai]
+      summary: Query AI assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiQueryRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiQueryResponse'
+  /admin/families:
+    get:
+      tags: [admin]
+      summary: List families in admin console
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyListResponse'
+  /admin/babies:
+    get:
+      tags: [admin]
+      summary: List babies in admin console
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BabyListResponse'
+  /admin/events:
+    get:
+      tags: [admin]
+      summary: List events in admin console
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventListResponse'
+  /health/live:
+    get:
+      tags: [health]
+      summary: Liveness probe
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+  /health/ready:
+    get:
+      tags: [health]
+      summary: Readiness probe
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+components:
+  parameters:
+    FamilyId:
+      in: path
+      name: family_id
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BabyId:
+      in: path
+      name: baby_id
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EventId:
+      in: path
+      name: event_id
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    CommonResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+    FamilyRole:
+      type: string
+      enum: [owner, caregiver, viewer]
+    EventType:
+      type: string
+      enum: [feeding, excretion, measurement, sleep, medication, vaccine, milestone]
+    WechatLoginRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+        encrypted_phone_data:
+          type: string
+        iv:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+    Family:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/FamilyRole'
+        timezone:
+          type: string
+    Baby:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        family_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        nickname:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, unknown]
+        birth_date:
+          type: string
+          format: date
+        birth_weight_g:
+          type: integer
+        birth_height_cm:
+          type: number
+        birth_head_circumference_cm:
+          type: number
+    WechatLoginData:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        families:
+          type: array
+          items:
+            $ref: '#/components/schemas/Family'
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/WechatLoginData'
+    FamilyResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Family'
+    FamilyListResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Family'
+    FamilyMemberResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                family_id:
+                  type: string
+                  format: uuid
+                user_id:
+                  type: string
+                  format: uuid
+                role:
+                  $ref: '#/components/schemas/FamilyRole'
+                status:
+                  type: string
+    BabyCreateRequest:
+      type: object
+      required: [family_id, name, birth_date]
+      properties:
+        family_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        nickname:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, unknown]
+        birth_date:
+          type: string
+          format: date
+        birth_weight_g:
+          type: integer
+        birth_height_cm:
+          type: number
+        birth_head_circumference_cm:
+          type: number
+        timezone:
+          type: string
+          default: Asia/Shanghai
+    BabyUpdateRequest:
+      type: object
+      properties:
+        nickname:
+          type: string
+        birth_weight_g:
+          type: integer
+        birth_height_cm:
+          type: number
+        birth_head_circumference_cm:
+          type: number
+    BabyResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Baby'
+    BabyListResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Baby'
+    EventPayload:
+      type: object
+      additionalProperties: true
+      description: Type-specific payload for growth events.
+    EventCreateRequest:
+      type: object
+      required: [family_id, baby_id, event_type, occurred_at, payload]
+      properties:
+        family_id:
+          type: string
+          format: uuid
+        baby_id:
+          type: string
+          format: uuid
+        event_type:
+          $ref: '#/components/schemas/EventType'
+        occurred_at:
+          type: string
+          format: date-time
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+          default: Asia/Shanghai
+        notes:
+          type: string
+        payload:
+          $ref: '#/components/schemas/EventPayload'
+    EventUpdateRequest:
+      type: object
+      properties:
+        occurred_at:
+          type: string
+          format: date-time
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        notes:
+          type: string
+        payload:
+          $ref: '#/components/schemas/EventPayload'
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        family_id:
+          type: string
+          format: uuid
+        baby_id:
+          type: string
+          format: uuid
+        event_type:
+          $ref: '#/components/schemas/EventType'
+        occurred_at:
+          type: string
+          format: date-time
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        notes:
+          type: string
+        payload:
+          $ref: '#/components/schemas/EventPayload'
+        status:
+          type: string
+          enum: [active, deleted]
+    EventResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Event'
+    EventListResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Event'
+    DailySummary:
+      type: object
+      properties:
+        summary_date:
+          type: string
+          format: date
+        feeding_total_ml:
+          type: integer
+        feeding_breakdown:
+          type: object
+          additionalProperties: true
+        excretion_count_total:
+          type: integer
+        excretion_breakdown:
+          type: object
+          additionalProperties: true
+        sleep_total_minutes:
+          type: integer
+        last_measurement_snapshot:
+          type: object
+          additionalProperties: true
+        alerts:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    DailySummaryResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/DailySummary'
+    TrendPoint:
+      type: object
+      properties:
+        bucket_date:
+          type: string
+          format: date
+        value:
+          type: number
+    TrendResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                metric_code:
+                  type: string
+                unit:
+                  type: string
+                points:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TrendPoint'
+    AlertRuleCreateRequest:
+      type: object
+      required: [family_id, rule_type, severity]
+      properties:
+        family_id:
+          type: string
+          format: uuid
+        rule_type:
+          type: string
+        threshold_value:
+          type: number
+        window_hours:
+          type: integer
+        window_days:
+          type: integer
+        severity:
+          type: string
+          enum: [info, warning, high]
+        enabled:
+          type: boolean
+          default: true
+    AlertListResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+    ExportTaskCreateRequest:
+      type: object
+      required: [family_id, baby_id, report_type, date_from, date_to]
+      properties:
+        family_id:
+          type: string
+          format: uuid
+        baby_id:
+          type: string
+          format: uuid
+        report_type:
+          type: string
+          enum: [daily, weekly, monthly, custom]
+        date_from:
+          type: string
+          format: date
+        date_to:
+          type: string
+          format: date
+    ExportTaskResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                status:
+                  type: string
+                  enum: [pending, running, succeeded, failed]
+                download_url:
+                  type: string
+                expires_at:
+                  type: string
+                  format: date-time
+    AiQueryRequest:
+      type: object
+      required: [family_id, baby_id, question]
+      properties:
+        family_id:
+          type: string
+          format: uuid
+        baby_id:
+          type: string
+          format: uuid
+        question:
+          type: string
+    AiQueryResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                answer:
+                  type: string
+                window:
+                  type: string
+                disclaimer:
+                  type: string

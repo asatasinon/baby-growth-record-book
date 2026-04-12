@@ -41,6 +41,7 @@ description: 仓库级后端基础开发准则。只要用户要求实现或修�
 
 ## 接口与错误处理
 - 所有 API 按 `/api/v1` 组织，并保持统一响应壳 `{ code, message, data }`。
+- API 边界统一使用字符串 ID（`^[0-9]+$`）；通过 Pydantic validator/serializer 实现集中转换，禁止业务层散落转换。
 - 错误码只使用约定集合，不新增“临时字符串错误码”。
 - 写接口在重试场景支持 `X-Idempotency-Key` 并保证幂等语义。
 

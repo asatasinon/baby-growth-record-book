@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Baby Growth Record API
-  version: 2.0.0
-  description: API specification for the baby growth record SaaS platform. IDs use int64 and time fields use UTC millisecond timestamps.
+  version: 2.1.0
+  description: API specification for the baby growth record SaaS platform. IDs are decimal strings at API boundary and stored as bigint in database; time fields use UTC millisecond timestamps.
 servers:
   - url: /api/v1
 tags:
@@ -84,8 +84,8 @@ paths:
               required: [role]
               properties:
                 user_id:
-                  type: integer
-                  format: int64
+                  type: string
+                  pattern: '^[0-9]+$'
                 invitee_phone:
                   type: string
                 role:
@@ -107,8 +107,8 @@ paths:
           name: member_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
       requestBody:
         required: true
         content:
@@ -137,8 +137,8 @@ paths:
           name: family_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
       responses:
         '200':
           description: success
@@ -202,13 +202,13 @@ paths:
           name: family_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: baby_id
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: event_type
           schema:
@@ -230,6 +230,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EventListResponse'
+        '400':
+          description: invalid id or query argument
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidArgumentResponse'
+              example:
+                code: INVALID_ARGUMENT
+                message: invalid id format
+                data:
+                  field: family_id
+                  reason: must match ^[0-9]+$
+                  value: abc
     post:
       tags: [events]
       summary: Create growth event
@@ -304,14 +317,14 @@ paths:
           name: family_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: baby_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: date
           required: true
@@ -334,14 +347,14 @@ paths:
           name: family_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: baby_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: week_start
           required: true
@@ -364,14 +377,14 @@ paths:
           name: family_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: baby_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: month
           required: true
@@ -395,14 +408,14 @@ paths:
           name: family_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: baby_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: metric_code
           required: true
@@ -443,14 +456,14 @@ paths:
           name: family_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
         - in: query
           name: baby_id
           required: false
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
       responses:
         '200':
           description: success
@@ -484,8 +497,8 @@ paths:
           name: alert_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
       responses:
         '200':
           description: success
@@ -519,8 +532,8 @@ paths:
           name: family_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
       responses:
         '200':
           description: success
@@ -537,8 +550,8 @@ paths:
           name: task_id
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            pattern: '^[0-9]+$'
       responses:
         '200':
           description: success
@@ -625,22 +638,22 @@ components:
       name: family_id
       required: true
       schema:
-        type: integer
-        format: int64
+        type: string
+        pattern: '^[0-9]+$'
     BabyId:
       in: path
       name: baby_id
       required: true
       schema:
-        type: integer
-        format: int64
+        type: string
+        pattern: '^[0-9]+$'
     EventId:
       in: path
       name: event_id
       required: true
       schema:
-        type: integer
-        format: int64
+        type: string
+        pattern: '^[0-9]+$'
   schemas:
     CommonResponse:
       type: object
@@ -652,6 +665,22 @@ components:
         data:
           type: object
           additionalProperties: true
+    InvalidArgumentData:
+      type: object
+      properties:
+        field:
+          type: string
+        reason:
+          type: string
+        value:
+          type: string
+    InvalidArgumentResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/InvalidArgumentData'
     FamilyRole:
       type: string
       enum: [owner, caregiver, viewer]
@@ -672,16 +701,16 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         display_name:
           type: string
     Family:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         name:
           type: string
         role:
@@ -692,11 +721,11 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         family_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         name:
           type: string
         nickname:
@@ -758,14 +787,14 @@ components:
               type: object
               properties:
                 id:
-                  type: integer
-                  format: int64
+                  type: string
+                  pattern: '^[0-9]+$'
                 family_id:
-                  type: integer
-                  format: int64
+                  type: string
+                  pattern: '^[0-9]+$'
                 user_id:
-                  type: integer
-                  format: int64
+                  type: string
+                  pattern: '^[0-9]+$'
                 role:
                   $ref: '#/components/schemas/FamilyRole'
                 status:
@@ -775,8 +804,8 @@ components:
       required: [family_id, name, birth_date]
       properties:
         family_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         name:
           type: string
         nickname:
@@ -832,11 +861,11 @@ components:
       required: [family_id, baby_id, event_type, occurred_at, payload]
       properties:
         family_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         baby_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         event_type:
           $ref: '#/components/schemas/EventType'
         occurred_at:
@@ -875,14 +904,14 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         family_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         baby_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         event_type:
           $ref: '#/components/schemas/EventType'
         occurred_at:
@@ -981,8 +1010,8 @@ components:
       required: [family_id, rule_type, severity]
       properties:
         family_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         rule_type:
           type: string
         threshold_value:
@@ -1012,11 +1041,11 @@ components:
       required: [family_id, baby_id, report_type, date_from, date_to]
       properties:
         family_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         baby_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         report_type:
           type: string
           enum: [daily, weekly, monthly, custom]
@@ -1035,8 +1064,8 @@ components:
               type: object
               properties:
                 id:
-                  type: integer
-                  format: int64
+                  type: string
+                  pattern: '^[0-9]+$'
                 status:
                   type: string
                   enum: [pending, running, succeeded, failed]
@@ -1050,11 +1079,11 @@ components:
       required: [family_id, baby_id, question]
       properties:
         family_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         baby_id:
-          type: integer
-          format: int64
+          type: string
+          pattern: '^[0-9]+$'
         question:
           type: string
     AiQueryResponse:

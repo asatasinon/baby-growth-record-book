@@ -2,7 +2,7 @@
 
 > 文档编号：D03
 > 状态：草案
-> 版本号：v0.2.0
+> 版本号：v0.4.0
 > 最后更新时间：2026-04-12
 > 审核人：待定
 > 生效日期：2026-04-12
@@ -14,6 +14,8 @@
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-12 | Codex | 创建接口设计文档首版。 |
 | v0.2.0 | 2026-04-12 | Codex | 统一 ID 为 `bigint`，时间字段为毫秒时间戳。 |
+| v0.3.0 | 2026-04-12 | Codex | 明确 API 层 ID 使用字符串，后端入参转 `bigint`、出参转字符串。 |
+| v0.4.0 | 2026-04-12 | Codex | 增加 ID 正则约束、Pydantic 转换层规范和错误 ID 标准示例。 |
 
 ## 文档目的
 - 定义首版 REST API 的路径、鉴权、请求响应结构、错误码和公共约定。
@@ -31,11 +33,29 @@
 ## 基础规范
 - Base URL：`/api/v1`
 - 数据格式：`application/json`
-- ID 格式：`int64`（对应数据库 `bigint`）
+- ID 格式：数字字符串（正则 `^[0-9]+$`，数据库内部存储为 `bigint`）
 - 时间格式：毫秒时间戳（UTC），例如 `1744416720000`
 - 鉴权方式：`Authorization: Bearer <token>`
 - 分页参数：`page`、`page_size`
 - 排序参数：`sort_by`、`sort_order`
+- ID 转换规则：请求中的 ID 字符串在服务端转换为 `bigint` 查询；响应中的 `bigint` ID 统一转换为字符串返回前端。
+
+## ID 校验与转换实现规范
+- OpenAPI 中所有 `id/*_id` 字段必须声明为字符串并加正则 `^[0-9]+$`。
+- 后端必须在统一的 schema 层实现 ID 校验，不允许在业务逻辑里散落 `int()` 转换。
+- 推荐在 `backend/app/schemas/` 下定义统一 ID 类型和转换器（Pydantic validator/serializer），供所有请求和响应模型复用。
+- 服务层只接收“已校验且可转换”的 ID 值，Repository 层只接收 `bigint`。
+
+## 推荐实现骨架（Pydantic）
+```python
+IdStr = Annotated[str, Field(pattern=r"^[0-9]+$")]
+
+def to_db_id(value: IdStr) -> int:
+    return int(value)
+
+def to_api_id(value: int) -> str:
+    return str(value)
+```
 
 ## 响应包装
 
@@ -57,6 +77,21 @@
 - `RATE_LIMITED`
 - `AI_SERVICE_UNAVAILABLE`
 - `INTERNAL_ERROR`
+
+### 错误 ID 标准示例
+当 ID 格式非法（例如 `family_id=abc`）时，返回：
+
+```json
+{
+  "code": "INVALID_ARGUMENT",
+  "message": "invalid id format",
+  "data": {
+    "field": "family_id",
+    "reason": "must match ^[0-9]+$",
+    "value": "abc"
+  }
+}
+```
 
 ## 鉴权接口
 
@@ -82,12 +117,12 @@
     "access_token": "jwt",
     "refresh_token": "jwt",
     "user": {
-      "id": 10001,
+      "id": "10001",
       "display_name": "妈妈"
     },
     "families": [
       {
-        "id": 20001,
+        "id": "20001",
         "name": "张家",
         "role": "owner"
       }
@@ -132,8 +167,8 @@
 
 ```json
 {
-  "family_id": 20001,
-  "baby_id": 30001,
+  "family_id": "20001",
+  "baby_id": "30001",
   "event_type": "feeding",
   "occurred_at": 1744416720000,
   "start_at": 1744416720000,
@@ -228,8 +263,8 @@
 
 ```json
 {
-  "family_id": 20001,
-  "baby_id": 30001,
+  "family_id": "20001",
+  "baby_id": "30001",
   "question": "最近7天平均每天喂养多少毫升？"
 }
 ```

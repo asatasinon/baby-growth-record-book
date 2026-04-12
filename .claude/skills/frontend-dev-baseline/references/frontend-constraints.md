@@ -25,7 +25,8 @@
 
 ## 契约与数据上下文
 - API Base URL：`/api/v1`
-- ID 字段类型：`int64`（对应数据库 `bigint`）
+- ID 字段类型：API 返回数字字符串（数据库内部为 `bigint`）
+- ID 正则约束：`^[0-9]+$`
 - 统一响应壳：`{ code, message, data }`
 - 常见错误码：`INVALID_ARGUMENT`、`UNAUTHORIZED`、`FORBIDDEN`、`NOT_FOUND`、`CONFLICT`、`RATE_LIMITED`、`AI_SERVICE_UNAVAILABLE`
 - 除登录外，业务请求必须携带并维护家庭/宝宝上下文（至少 `family_id`，必要时 `baby_id`）

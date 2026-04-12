@@ -25,11 +25,15 @@
 ## API 契约
 - Base URL：`/api/v1`
 - 鉴权：`Authorization: Bearer <token>`
-- ID 字段类型：`int64`（对应数据库 `bigint`）
+- ID 字段类型：API 边界使用数字字符串（数据库内部为 `bigint`）
+- ID 正则约束：`^[0-9]+$`
 - 时间字段类型：UTC 毫秒时间戳（`int64`）
 - 响应壳：`{ code, message, data }`
 - 错误码：`OK`、`INVALID_ARGUMENT`、`UNAUTHORIZED`、`FORBIDDEN`、`NOT_FOUND`、`CONFLICT`、`RATE_LIMITED`、`AI_SERVICE_UNAVAILABLE`、`INTERNAL_ERROR`
 - 写接口支持 `X-Idempotency-Key`
+- 入参中的字符串 ID 在服务层统一转换为 `bigint` 后再查询或写入
+- 出参中的 `bigint` ID 统一转换为字符串返回前端
+- 非法 ID 统一返回 `INVALID_ARGUMENT`，并带 `data.field/reason/value`
 
 ## 领域与数据隔离
 - 所有业务数据必须带 `family_id`

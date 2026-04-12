@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Baby Growth Record API
-  version: 1.0.0
-  description: API specification for the baby growth record SaaS platform.
+  version: 2.0.0
+  description: API specification for the baby growth record SaaS platform. IDs use int64 and time fields use UTC millisecond timestamps.
 servers:
   - url: /api/v1
 tags:
@@ -84,8 +84,8 @@ paths:
               required: [role]
               properties:
                 user_id:
-                  type: string
-                  format: uuid
+                  type: integer
+                  format: int64
                 invitee_phone:
                   type: string
                 role:
@@ -107,8 +107,8 @@ paths:
           name: member_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
       requestBody:
         required: true
         content:
@@ -137,8 +137,8 @@ paths:
           name: family_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
       responses:
         '200':
           description: success
@@ -202,13 +202,13 @@ paths:
           name: family_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: baby_id
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: event_type
           schema:
@@ -216,13 +216,13 @@ paths:
         - in: query
           name: date_from
           schema:
-            type: string
-            format: date
+            type: integer
+            format: int64
         - in: query
           name: date_to
           schema:
-            type: string
-            format: date
+            type: integer
+            format: int64
       responses:
         '200':
           description: success
@@ -304,20 +304,20 @@ paths:
           name: family_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: baby_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: date
           required: true
           schema:
-            type: string
-            format: date
+            type: integer
+            format: int64
       responses:
         '200':
           description: success
@@ -334,20 +334,20 @@ paths:
           name: family_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: baby_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: week_start
           required: true
           schema:
-            type: string
-            format: date
+            type: integer
+            format: int64
       responses:
         '200':
           description: success
@@ -364,20 +364,21 @@ paths:
           name: family_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: baby_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: month
           required: true
           schema:
-            type: string
-            example: 2026-04
+            type: integer
+            format: int64
+            example: 1743465600000
       responses:
         '200':
           description: success
@@ -394,14 +395,14 @@ paths:
           name: family_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: baby_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: metric_code
           required: true
@@ -411,14 +412,14 @@ paths:
           name: date_from
           required: true
           schema:
-            type: string
-            format: date
+            type: integer
+            format: int64
         - in: query
           name: date_to
           required: true
           schema:
-            type: string
-            format: date
+            type: integer
+            format: int64
         - in: query
           name: bucket
           required: false
@@ -442,14 +443,14 @@ paths:
           name: family_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
         - in: query
           name: baby_id
           required: false
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
       responses:
         '200':
           description: success
@@ -483,8 +484,8 @@ paths:
           name: alert_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
       responses:
         '200':
           description: success
@@ -518,8 +519,8 @@ paths:
           name: family_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
       responses:
         '200':
           description: success
@@ -536,8 +537,8 @@ paths:
           name: task_id
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
       responses:
         '200':
           description: success
@@ -624,22 +625,22 @@ components:
       name: family_id
       required: true
       schema:
-        type: string
-        format: uuid
+        type: integer
+        format: int64
     BabyId:
       in: path
       name: baby_id
       required: true
       schema:
-        type: string
-        format: uuid
+        type: integer
+        format: int64
     EventId:
       in: path
       name: event_id
       required: true
       schema:
-        type: string
-        format: uuid
+        type: integer
+        format: int64
   schemas:
     CommonResponse:
       type: object
@@ -671,16 +672,16 @@ components:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         display_name:
           type: string
     Family:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         name:
           type: string
         role:
@@ -691,11 +692,11 @@ components:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         family_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         name:
           type: string
         nickname:
@@ -704,8 +705,8 @@ components:
           type: string
           enum: [male, female, unknown]
         birth_date:
-          type: string
-          format: date
+          type: integer
+          format: int64
         birth_weight_g:
           type: integer
         birth_height_cm:
@@ -757,14 +758,14 @@ components:
               type: object
               properties:
                 id:
-                  type: string
-                  format: uuid
+                  type: integer
+                  format: int64
                 family_id:
-                  type: string
-                  format: uuid
+                  type: integer
+                  format: int64
                 user_id:
-                  type: string
-                  format: uuid
+                  type: integer
+                  format: int64
                 role:
                   $ref: '#/components/schemas/FamilyRole'
                 status:
@@ -774,8 +775,8 @@ components:
       required: [family_id, name, birth_date]
       properties:
         family_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         name:
           type: string
         nickname:
@@ -784,8 +785,8 @@ components:
           type: string
           enum: [male, female, unknown]
         birth_date:
-          type: string
-          format: date
+          type: integer
+          format: int64
         birth_weight_g:
           type: integer
         birth_height_cm:
@@ -831,22 +832,22 @@ components:
       required: [family_id, baby_id, event_type, occurred_at, payload]
       properties:
         family_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         baby_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         event_type:
           $ref: '#/components/schemas/EventType'
         occurred_at:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
         start_at:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
         end_at:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
         timezone:
           type: string
           default: Asia/Shanghai
@@ -858,14 +859,14 @@ components:
       type: object
       properties:
         occurred_at:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
         start_at:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
         end_at:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
         notes:
           type: string
         payload:
@@ -874,25 +875,25 @@ components:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         family_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         baby_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         event_type:
           $ref: '#/components/schemas/EventType'
         occurred_at:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
         start_at:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
         end_at:
-          type: string
-          format: date-time
+          type: integer
+          format: int64
         timezone:
           type: string
         notes:
@@ -922,8 +923,8 @@ components:
       type: object
       properties:
         summary_date:
-          type: string
-          format: date
+          type: integer
+          format: int64
         feeding_total_ml:
           type: integer
         feeding_breakdown:
@@ -955,8 +956,8 @@ components:
       type: object
       properties:
         bucket_date:
-          type: string
-          format: date
+          type: integer
+          format: int64
         value:
           type: number
     TrendResponse:
@@ -980,8 +981,8 @@ components:
       required: [family_id, rule_type, severity]
       properties:
         family_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         rule_type:
           type: string
         threshold_value:
@@ -1011,20 +1012,20 @@ components:
       required: [family_id, baby_id, report_type, date_from, date_to]
       properties:
         family_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         baby_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         report_type:
           type: string
           enum: [daily, weekly, monthly, custom]
         date_from:
-          type: string
-          format: date
+          type: integer
+          format: int64
         date_to:
-          type: string
-          format: date
+          type: integer
+          format: int64
     ExportTaskResponse:
       allOf:
         - $ref: '#/components/schemas/CommonResponse'
@@ -1034,26 +1035,26 @@ components:
               type: object
               properties:
                 id:
-                  type: string
-                  format: uuid
+                  type: integer
+                  format: int64
                 status:
                   type: string
                   enum: [pending, running, succeeded, failed]
                 download_url:
                   type: string
                 expires_at:
-                  type: string
-                  format: date-time
+                  type: integer
+                  format: int64
     AiQueryRequest:
       type: object
       required: [family_id, baby_id, question]
       properties:
         family_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         baby_id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         question:
           type: string
     AiQueryResponse:
@@ -1066,7 +1067,11 @@ components:
               properties:
                 answer:
                   type: string
-                window:
-                  type: string
+                window_start:
+                  type: integer
+                  format: int64
+                window_end:
+                  type: integer
+                  format: int64
                 disclaimer:
                   type: string

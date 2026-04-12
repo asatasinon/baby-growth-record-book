@@ -25,6 +25,7 @@
 
 ## 契约与数据上下文
 - API Base URL：`/api/v1`
+- ID 字段类型：`int64`（对应数据库 `bigint`）
 - 统一响应壳：`{ code, message, data }`
 - 常见错误码：`INVALID_ARGUMENT`、`UNAUTHORIZED`、`FORBIDDEN`、`NOT_FOUND`、`CONFLICT`、`RATE_LIMITED`、`AI_SERVICE_UNAVAILABLE`
 - 除登录外，业务请求必须携带并维护家庭/宝宝上下文（至少 `family_id`，必要时 `baby_id`）
@@ -32,7 +33,7 @@
 
 ## 时间与展示
 - 后端 UTC 存储，前端按用户/家庭时区展示
-- 时间参数与响应遵循 ISO 8601
+- 时间参数与响应统一为 UTC 毫秒时间戳
 
 ## 安全与隐私
 - 不在日志、埋点、错误上报中输出 token、手机号明文、openid/unionid

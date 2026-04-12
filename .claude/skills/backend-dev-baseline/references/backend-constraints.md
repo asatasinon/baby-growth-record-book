@@ -25,6 +25,8 @@
 ## API 契约
 - Base URL：`/api/v1`
 - 鉴权：`Authorization: Bearer <token>`
+- ID 字段类型：`int64`（对应数据库 `bigint`）
+- 时间字段类型：UTC 毫秒时间戳（`int64`）
 - 响应壳：`{ code, message, data }`
 - 错误码：`OK`、`INVALID_ARGUMENT`、`UNAUTHORIZED`、`FORBIDDEN`、`NOT_FOUND`、`CONFLICT`、`RATE_LIMITED`、`AI_SERVICE_UNAVAILABLE`、`INTERNAL_ERROR`
 - 写接口支持 `X-Idempotency-Key`
@@ -36,8 +38,8 @@
 - 事件主写入后需要投递异步重算任务
 
 ## 数据库约束
-- 主键统一 `UUID`
-- 关键时间字段使用 `TIMESTAMPTZ`（UTC）
+- 主键统一 `BIGINT`
+- 关键时间字段统一为 UTC 毫秒时间戳（`BIGINT`）
 - 详情表与 `growth_events` 通过 `event_id` 一对一关联
 - 关键唯一约束：
   - `family_members (family_id, user_id)`

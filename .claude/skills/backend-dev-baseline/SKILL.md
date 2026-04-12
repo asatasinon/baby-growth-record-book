@@ -60,7 +60,7 @@ description: 仓库级后端基础开发准则。只要用户要求实现或修�
 - 导出任务要有状态机（pending/running/succeeded/failed）和失败原因。
 
 ## 数据库与一致性
-- 主键统一 `UUID`；时间使用 `TIMESTAMPTZ`（UTC）。
+- 主键统一 `BIGINT`；时间字段统一使用 UTC 毫秒时间戳（`BIGINT`）。
 - 保持关键唯一键、外键和 `CHECK` 约束不被代码绕过。
 - 查询优先利用既有索引组合，避免在高频路径制造全表扫描。
 

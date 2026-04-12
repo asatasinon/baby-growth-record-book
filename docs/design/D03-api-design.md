@@ -2,7 +2,7 @@
 
 > 文档编号：D03
 > 状态：草案
-> 版本号：v0.1.0
+> 版本号：v0.2.0
 > 最后更新时间：2026-04-12
 > 审核人：待定
 > 生效日期：2026-04-12
@@ -13,6 +13,7 @@
 | 版本号 | 日期 | 变更人 | 变更说明 |
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-12 | Codex | 创建接口设计文档首版。 |
+| v0.2.0 | 2026-04-12 | Codex | 统一 ID 为 `bigint`，时间字段为毫秒时间戳。 |
 
 ## 文档目的
 - 定义首版 REST API 的路径、鉴权、请求响应结构、错误码和公共约定。
@@ -30,7 +31,8 @@
 ## 基础规范
 - Base URL：`/api/v1`
 - 数据格式：`application/json`
-- 时间格式：ISO 8601，UTC 存储，例如 `2026-04-12T00:12:00Z`
+- ID 格式：`int64`（对应数据库 `bigint`）
+- 时间格式：毫秒时间戳（UTC），例如 `1744416720000`
 - 鉴权方式：`Authorization: Bearer <token>`
 - 分页参数：`page`、`page_size`
 - 排序参数：`sort_by`、`sort_order`
@@ -80,12 +82,12 @@
     "access_token": "jwt",
     "refresh_token": "jwt",
     "user": {
-      "id": "uuid",
+      "id": 10001,
       "display_name": "妈妈"
     },
     "families": [
       {
-        "id": "uuid",
+        "id": 20001,
         "name": "张家",
         "role": "owner"
       }
@@ -130,12 +132,12 @@
 
 ```json
 {
-  "family_id": "uuid",
-  "baby_id": "uuid",
+  "family_id": 20001,
+  "baby_id": 30001,
   "event_type": "feeding",
-  "occurred_at": "2026-04-12T00:12:00Z",
-  "start_at": "2026-04-12T00:12:00Z",
-  "end_at": "2026-04-12T00:32:00Z",
+  "occurred_at": 1744416720000,
+  "start_at": 1744416720000,
+  "end_at": 1744417920000,
   "timezone": "Asia/Shanghai",
   "notes": "夜间喂养",
   "payload": {
@@ -147,7 +149,7 @@
 ```
 
 ### `GET /events`
-- 条件：`family_id`、`baby_id`、`event_type`、`date_from`、`date_to`
+- 条件：`family_id`、`baby_id`、`event_type`、`date_from`、`date_to`（毫秒时间戳）
 
 ### `GET /events/{event_id}`
 - 获取事件详情。
@@ -161,13 +163,13 @@
 ## 汇总接口
 
 ### `GET /summaries/daily`
-- 参数：`family_id`、`baby_id`、`date`
+- 参数：`family_id`、`baby_id`、`date`（毫秒时间戳）
 
 ### `GET /summaries/weekly`
-- 参数：`week_start`
+- 参数：`week_start`（毫秒时间戳）
 
 ### `GET /summaries/monthly`
-- 参数：`month`
+- 参数：`month`（月起始毫秒时间戳）
 
 ## 趋势接口
 
@@ -176,8 +178,8 @@
   - `family_id`
   - `baby_id`
   - `metric_code`
-  - `date_from`
-  - `date_to`
+  - `date_from`（毫秒时间戳）
+  - `date_to`（毫秒时间戳）
   - `bucket=day|week|month`
 - 返回示例：
 
@@ -189,9 +191,9 @@
     "metric_code": "weight_g",
     "unit": "g",
     "points": [
-      {"bucket_date": "2026-04-01", "value": 4900},
-      {"bucket_date": "2026-04-08", "value": 4970},
-      {"bucket_date": "2026-04-12", "value": 5010}
+      {"bucket_date": 1743436800000, "value": 4900},
+      {"bucket_date": 1744041600000, "value": 4970},
+      {"bucket_date": 1744387200000, "value": 5010}
     ]
   }
 }
@@ -226,8 +228,8 @@
 
 ```json
 {
-  "family_id": "uuid",
-  "baby_id": "uuid",
+  "family_id": 20001,
+  "baby_id": 30001,
   "question": "最近7天平均每天喂养多少毫升？"
 }
 ```
@@ -240,7 +242,8 @@
   "message": "success",
   "data": {
     "answer": "最近 7 天平均每天喂养约 560ml。",
-    "window": "2026-04-05 ~ 2026-04-11",
+    "window_start": 1743811200000,
+    "window_end": 1744416000000,
     "disclaimer": "结果基于记录数据生成，不替代医生意见。"
   }
 }

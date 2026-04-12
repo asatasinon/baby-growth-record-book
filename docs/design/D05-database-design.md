@@ -2,7 +2,7 @@
 
 > 文档编号：D05
 > 状态：草案
-> 版本号：v0.1.0
+> 版本号：v0.2.0
 > 最后更新时间：2026-04-12
 > 审核人：待定
 > 生效日期：2026-04-12
@@ -13,6 +13,7 @@
 | 版本号 | 日期 | 变更人 | 变更说明 |
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-12 | Codex | 创建数据库设计文档首版。 |
+| v0.2.0 | 2026-04-12 | Codex | 主键统一为 `bigint`，时间字段统一为毫秒时间戳。 |
 
 ## 文档目的
 - 定义 PostgreSQL 层面的表、字段、索引、约束和归档预案。
@@ -27,9 +28,9 @@
 - [数据库 DDL 草案](../specs/S02-db-schema.sql)
 
 ## 设计原则
-- 主键统一使用 `UUID`。
+- 主键统一使用 `BIGINT`（自增标识）。
 - 所有业务表都带 `created_at`、`updated_at`，重要业务表带 `deleted_at`。
-- 时间统一按 UTC 存储，展示转换在应用层完成。
+- 时间相关字段统一为 UTC 毫秒时间戳（`BIGINT`），展示转换在应用层完成。
 - 枚举值默认通过 `CHECK` 或 PostgreSQL `ENUM` 管理。
 
 ## 主要表
@@ -81,6 +82,7 @@
 
 ### `daily_summaries`
 - 唯一键：`(family_id, baby_id, summary_date)`
+- `summary_date` 使用当日 `00:00:00 UTC` 的毫秒时间戳。
 - 字段建议：
   - `feeding_total_ml`
   - `feeding_breakdown`
@@ -92,6 +94,7 @@
 
 ### `metric_snapshots`
 - 用于趋势查询的通用指标表。
+- `bucket_date` 使用桶起始点的毫秒时间戳（按 `bucket_type` 对齐）。
 - 唯一键：`(baby_id, metric_code, bucket_date, bucket_type)`
 
 ## 索引策略

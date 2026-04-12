@@ -4,9 +4,9 @@
   "packageManager": "pnpm@9.12.0",
   "scripts": {
     "dev:miniapp": "pnpm --filter @baby-growth/miniapp dev:weapp",
-    "dev:web": "pnpm --filter @baby-growth/web dev",
+    "dev:h5": "pnpm --filter @baby-growth/miniapp dev:h5",
     "dev:admin": "pnpm --filter @baby-growth/admin dev",
-    "build:web": "pnpm --filter @baby-growth/web build",
+    "build:h5": "pnpm --filter @baby-growth/miniapp build:h5",
     "build:admin": "pnpm --filter @baby-growth/admin build"
   }
 }

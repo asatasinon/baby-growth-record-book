@@ -2,7 +2,7 @@
 
 > 文档编号：A02
 > 状态：草案
-> 版本号：v0.2.0
+> 版本号：v0.3.0
 > 最后更新时间：2026-04-12
 > 审核人：待定
 > 生效日期：2026-04-12
@@ -14,6 +14,7 @@
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-12 | Codex | 创建部署与运维文档首版。 |
 | v0.2.0 | 2026-04-12 | Codex | 明确前端 `pnpm` 与 Python `uv` 的构建依赖管理约束。 |
+| v0.3.0 | 2026-04-12 | Codex | 明确前端收敛策略：H5 由 `frontend/miniapp` 统一构建；本地 Compose 增加 `h5` 容器挂载 `miniapp/dist` 用于联调测试。 |
 
 ## 文档目的
 - 给出首版容器化部署方案、环境变量、监控、备份和低成本运维路径。
@@ -29,7 +30,8 @@
 
 ## 首版部署策略
 - 单云单地域单实例。
-- 使用 `Docker Compose` 部署 `nginx + api + worker + postgres`。
+- 使用 `Docker Compose` 部署 `nginx + h5 + api + worker + postgres`（本地联调）。
+- 本地联调前需先在宿主机执行 `pnpm --filter @baby-growth/miniapp build:h5`，`h5` 容器直接挂载并托管 `frontend/miniapp/dist`。
 - H5 和管理后台静态资源建议部署到对象存储 + CDN。
 - 微信小程序通过微信开放平台独立发布。
 
@@ -70,6 +72,7 @@ flowchart TB
 
 ## 容器职责
 - `nginx`：HTTPS 终止、静态代理、反向代理、限流。
+- `h5`：用户端 H5 静态资源托管（由 `frontend/miniapp` 构建产物提供）。
 - `api`：REST API、鉴权、业务逻辑。
 - `worker`：汇总任务、导出任务、提醒扫描、AI 摘要。
 - `postgres`：主数据库。

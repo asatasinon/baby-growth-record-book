@@ -2,8 +2,7 @@
 
 按照架构与设计文档初始化的首版工程骨架，包含：
 
-- `frontend/miniapp`: `Taro + React + TypeScript`（小程序/用户端）
-- `frontend/web`: `React + Vite`（H5 分享页）
+- `frontend/miniapp`: `Taro + React + TypeScript`（同一套代码产出小程序与 H5）
 - `frontend/admin`: `React + Vite + Ant Design`（管理后台）
 - `backend`: `FastAPI + Pydantic + SQLAlchemy`（模块化单体 API）
 - `worker`: Python 异步任务执行器（聚合、导出、提醒、AI 摘要）
@@ -14,7 +13,7 @@
 ```bash
 pnpm install
 pnpm dev:miniapp   # 小程序开发模式
-pnpm dev:web       # H5
+pnpm dev:h5        # H5 开发模式（来自 miniapp）
 pnpm dev:admin     # 管理后台
 ```
 
@@ -37,6 +36,7 @@ uv run python -m app.main
 ## 容器启动
 
 ```bash
+pnpm build:h5
 cp .env.example .env
 docker compose up --build
 ```

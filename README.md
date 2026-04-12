@@ -7,7 +7,7 @@
 - `frontend/admin`: `React + Vite + Ant Design`（管理后台）
 - `backend`: `FastAPI + Pydantic + SQLAlchemy`（模块化单体 API）
 - `worker`: Python 异步任务执行器（聚合、导出、提醒、AI 摘要）
-- `docker-compose.yml`: `nginx + api + worker + postgres` 本地部署基线
+- `docker-compose.yml`: `nginx + h5 + api + worker + postgres` 本地部署基线
 
 ## 前端（pnpm）
 
@@ -40,6 +40,14 @@ uv run python -m app.main
 cp .env.example .env
 docker compose up --build
 ```
+
+容器启动后：
+
+- H5 访问：`http://localhost:8080/`
+- API 访问：`http://localhost:8080/api/v1/...`
+- 健康检查：
+  - `http://localhost:8080/health/live`
+  - `http://localhost:8080/health/ready`
 
 ## 文档入口
 

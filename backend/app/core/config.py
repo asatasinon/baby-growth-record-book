@@ -1,7 +1,14 @@
 from functools import lru_cache
+from os import getenv
+from pathlib import Path
 
 from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    TomlConfigSettingsSource,
+)
 
 
 class Settings(BaseSettings):
@@ -26,7 +33,38 @@ class Settings(BaseSettings):
     llm_base_url: str | None = Field(default=None, alias="LLM_BASE_URL")
     llm_api_key: str | None = Field(default=None, alias="LLM_API_KEY")
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    api_host: str = Field(default="0.0.0.0", alias="API_HOST")
+    api_port: int = Field(default=8000, alias="API_PORT")
+    api_reload: bool = Field(default=True, alias="API_RELOAD")
+    api_log_level: str = Field(default="info", alias="API_LOG_LEVEL")
+    api_workers: int = Field(default=1, alias="API_WORKERS")
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        config_file = getenv("APP_CONFIG_FILE", "config/server.toml")
+        toml_file = Path(config_file)
+        toml_settings = TomlConfigSettingsSource(settings_cls, toml_file=toml_file)
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            toml_settings,
+            file_secret_settings,
+        )
 
     @property
     def db_dsn(self) -> str:

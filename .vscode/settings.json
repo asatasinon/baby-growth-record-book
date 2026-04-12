@@ -1,0 +1,31 @@
+{
+  // === 前端 (frontend/) ===
+  "i18n-ally.localesPaths": [
+    "frontend/i18n",
+    "frontend/components/i18n",
+    "frontend/i18n/locales",
+    "frontend/app/demo/i18n",
+    "frontend/components/chats/messages"
+  ],
+
+  // === 后端 (backend/) ===
+  "editor.rulers": [120],
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+
+  "cursorpyright.analysis.typeCheckingMode": "basic",
+  "cursorpyright.analysis.diagnosticMode": "openFilesOnly",
+  "cursorpyright.analysis.autoImportCompletions": true,
+  "cursorpyright.analysis.autoFormatStrings": true,
+  "cursorpyright.analysis.inlayHints.variableTypes": true,
+  "cursorpyright.analysis.inlayHints.functionReturnTypes": true,
+  "cursorpyright.analysis.inlayHints.callArgumentNames": true,
+
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  }
+}

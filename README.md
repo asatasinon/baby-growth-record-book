@@ -27,7 +27,7 @@ pnpm dev:admin     # 管理后台
 
 ```bash
 pnpm setup:python   # 安装 backend + worker 的 uv 依赖（含 dev）
-pnpm dev:backend    # 启动后端 API（uvicorn --reload）
+pnpm dev:backend    # 启动后端 API（统一 main 入口）
 pnpm dev:worker     # 启动 worker
 pnpm check          # ruff check --fix（backend + worker）
 pnpm lint           # backend/worker lint + frontend build 校验
@@ -38,7 +38,7 @@ pnpm lint           # backend/worker lint + frontend build 校验
 ```bash
 cd backend
 uv sync
-uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uv run python main.py
 ```
 
 ## Worker（uv）

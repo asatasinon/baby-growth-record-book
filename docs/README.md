@@ -2,7 +2,7 @@
 
 > 文档编号：DOC-ROOT
 > 状态：草案
-> 版本号：v0.5.0
+> 版本号：v0.6.0
 > 最后更新时间：2026-04-13
 > 审核人：待定
 > 生效日期：2026-04-13
@@ -17,6 +17,7 @@
 | v0.3.0 | 2026-04-12 | Codex | 补充可供多 agent 并行执行的细分任务文档索引。 |
 | v0.4.0 | 2026-04-12 | Codex | 明确前端使用 `pnpm`、Python 使用 `uv` 的依赖管理约束。 |
 | v0.5.0 | 2026-04-13 | Codex | 增加 `S03` 本地联调用测试数据脚本索引。 |
+| v0.6.0 | 2026-04-13 | Codex | 重建任务类文档索引，对齐新建 T00-T06 任务文档体系。 |
 
 ## 文档目的
 - 为 `baby-growth-record-book` 提供一套可直接用于立项评审、研发开工、联调测试和容器化部署的完整文档。
@@ -57,17 +58,13 @@
 - [D06 AI 与规则引擎](./design/D06-ai-and-rule-engine.md)
 
 ### 任务类
-- [T00 任务类文档索引](./task/README.md)
-- [T01 阶段性交付执行计划](./task/T01-phased-delivery-plan.md)
-- [T02 联调与验收任务清单](./task/T02-integration-and-acceptance-checklist.md)
-- [T03 Agent 协作边界与维护规则](./task/T03-agent-collaboration-boundaries.md)
-- [T04 规格基线与数据契约执行任务](./task/T04-spec-baseline-and-data-contract.md)
-- [T05 用户端与后台前端执行任务](./task/T05-frontend-user-app-and-admin.md)
-- [T06 账户、家庭与核心领域后端执行任务](./task/T06-backend-auth-family-and-events.md)
-- [T07 汇总、提醒与异步任务执行任务](./task/T07-summary-alerts-and-async-jobs.md)
-- [T08 AI、导出与分享执行任务](./task/T08-ai-export-and-sharing.md)
-- [T09 部署、安全与发布准备执行任务](./task/T09-ops-security-and-release-readiness.md)
-- [T10 测试、联调与验收执行任务](./task/T10-quality-integration-and-acceptance-execution.md)
+- [T00 任务文档索引与总看板](./task/README.md)
+- [T01 后端核心模块补全](./task/T01-backend-core.md)
+- [T02 后端 AI 模块真实接入](./task/T02-backend-ai.md)
+- [T03 Worker 任务真实实现](./task/T03-worker-jobs.md)
+- [T04 前端小程序缺失功能补全](./task/T04-frontend-miniapp.md)
+- [T05 前端管理后台补全](./task/T05-frontend-admin.md)
+- [T06 基础设施与 OSS 集成](./task/T06-infra-oss.md)
 
 ### 质量与验收类
 - [Q01 测试与验收](./quality/Q01-testing-and-acceptance.md)

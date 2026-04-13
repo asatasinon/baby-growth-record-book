@@ -1,7 +1,7 @@
 .profile-page {
   .login-card,
   .user-card,
-  .profile-form-card {
+  .quick-switch-card {
     padding: 26rpx;
   }
 
@@ -12,9 +12,10 @@
       linear-gradient(155deg, rgba(255, 255, 255, 0.96), rgba(241, 250, 255, 0.95));
   }
 
-  .profile-form-card {
-    margin-top: 18rpx;
-    border-radius: 26rpx;
+  .profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16rpx;
   }
 
   .hint {
@@ -28,11 +29,16 @@
   .user-card {
     display: flex;
     flex-direction: column;
-    gap: 12rpx;
+    gap: 16rpx;
     border-radius: 28rpx;
     background:
       radial-gradient(circle at 95% 8%, rgba(255, 129, 95, 0.2), transparent 34%),
       linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(241, 251, 255, 0.94));
+  }
+
+  .user-header {
+    align-items: flex-start;
+    gap: 14rpx;
   }
 
   .user-name {
@@ -40,6 +46,125 @@
     font-size: 34rpx;
     font-weight: 700;
     color: var(--ink-strong);
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12rpx;
+  }
+
+  .meta-item {
+    padding: 14rpx 16rpx;
+    border-radius: 16rpx;
+    border: 1rpx solid #d3e6f8;
+    background: rgba(255, 255, 255, 0.86);
+  }
+
+  .meta-label {
+    display: block;
+    margin-bottom: 8rpx;
+    font-size: 22rpx;
+    color: var(--text-sub);
+  }
+
+  .meta-value {
+    display: block;
+    font-size: 26rpx;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #1b507d;
+    word-break: break-all;
+  }
+
+  .quick-switch-card {
+    border-radius: 26rpx;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255, 129, 95, 0.16), transparent 38%),
+      linear-gradient(158deg, rgba(255, 255, 255, 0.95), rgba(243, 251, 255, 0.95));
+  }
+
+  .quick-block + .quick-block {
+    margin-top: 20rpx;
+    padding-top: 20rpx;
+    border-top: 1rpx dashed #cadff2;
+  }
+
+  .empty-inline {
+    margin-top: 6rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16rpx;
+  }
+
+  .empty-inline button[plain] {
+    margin-top: 0;
+    min-height: 58rpx;
+    padding: 0 24rpx;
+    border-radius: 999rpx;
+  }
+
+  .manage-header .section-title {
+    margin: 12rpx 0 4rpx;
+  }
+
+  .section-caption {
+    display: block;
+    margin-left: 20rpx;
+    font-size: 22rpx;
+    color: var(--text-sub);
+  }
+
+  .collapse-card {
+    padding: 0;
+    border-radius: 26rpx;
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.95), rgba(244, 251, 255, 0.95));
+  }
+
+  .collapse-head {
+    padding: 24rpx 26rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .collapse-title {
+    display: block;
+    font-size: 30rpx;
+    font-weight: 700;
+    color: #1f547e;
+  }
+
+  .collapse-action {
+    display: inline-block;
+    padding: 6rpx 16rpx;
+    border-radius: 999rpx;
+    border: 1rpx solid #c8ddf1;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 22rpx;
+    color: #355e84;
+  }
+
+  .collapse-body {
+    padding: 0 26rpx 26rpx;
+    border-top: 1rpx solid #d7e8f8;
+  }
+
+  .manage-block {
+    padding-top: 20rpx;
+  }
+
+  .manage-block + .manage-block {
+    margin-top: 20rpx;
+    padding-top: 20rpx;
+    border-top: 1rpx dashed #cadef2;
+  }
+
+  .owner-hint {
+    display: block;
+    margin-top: 20rpx;
+    font-size: 24rpx;
   }
 
   .picker-like {
@@ -57,6 +182,10 @@
 
   .pill-row {
     margin-top: 8rpx;
+  }
+
+  .collapse-card .form-title {
+    font-size: 28rpx;
   }
 
   button[plain] {

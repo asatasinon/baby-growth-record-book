@@ -26,6 +26,12 @@ import { formatDate, parseDateToStartMs, startOfDayMs } from '@/utils/time'
 
 import './index.scss'
 
+const inviteRoleOptions: Array<{ value: FamilyMemberRole; label: string }> = [
+  { value: 'caregiver', label: '照护者' },
+  { value: 'viewer', label: '查看者' },
+  { value: 'owner', label: '管理员' }
+]
+
 function parsePositiveNumber(text: string): number | undefined {
   if (!text.trim()) {
     return undefined
@@ -35,6 +41,19 @@ function parsePositiveNumber(text: string): number | undefined {
     return undefined
   }
   return value
+}
+
+function getRoleLabel(role: string): string {
+  if (role === 'caregiver') {
+    return '照护者'
+  }
+  if (role === 'viewer') {
+    return '查看者'
+  }
+  if (role === 'owner') {
+    return '管理员'
+  }
+  return '未设置'
 }
 
 export default function ProfilePage() {
@@ -67,15 +86,22 @@ export default function ProfilePage() {
   const [editWeight, setEditWeight] = useState('')
   const [editHeight, setEditHeight] = useState('')
   const [editHeadCircumference, setEditHeadCircumference] = useState('')
+  const [isFamilyManageOpen, setIsFamilyManageOpen] = useState(false)
+  const [isBabyManageOpen, setIsBabyManageOpen] = useState(false)
 
   const activeBaby = useMemo(
     () => babies.find((item) => item.id === activeBabyId) || null,
     [babies, activeBabyId]
   )
+  const activeFamily = useMemo(
+    () => session?.families.find((item) => item.id === activeFamilyId) || null,
+    [session, activeFamilyId]
+  )
   const activeFamilyRole = useMemo(
     () => session?.families.find((item) => item.id === activeFamilyId)?.role || '',
     [session, activeFamilyId]
   )
+  const activeFamilyRoleText = useMemo(() => getRoleLabel(activeFamilyRole), [activeFamilyRole])
 
   useEffect(() => {
     if (!activeBaby) {
@@ -92,6 +118,12 @@ export default function ProfilePage() {
       activeBaby.birth_head_circumference_cm ? String(activeBaby.birth_head_circumference_cm) : ''
     )
   }, [activeBaby])
+
+  useEffect(() => {
+    if (session && !isBabyLoading && babies.length === 0) {
+      setIsBabyManageOpen(true)
+    }
+  }, [session, isBabyLoading, babies.length])
 
   async function loadBabies(targetSession: AuthSession, familyId: string): Promise<void> {
     if (!familyId) {
@@ -353,12 +385,14 @@ export default function ProfilePage() {
     setBabies([])
     setActiveFamilyIdState('')
     setActiveBabyIdState('')
+    setIsFamilyManageOpen(false)
+    setIsBabyManageOpen(false)
     Taro.showToast({ title: '已退出登录', icon: 'success' })
   }
 
   return (
     <View className='page-shell profile-page'>
-      <Text className='section-title'>账号与家庭</Text>
+      <Text className='section-title'>我的账号</Text>
 
       {!session ? (
         <View className='card login-card'>
@@ -392,201 +426,265 @@ export default function ProfilePage() {
           </Button>
         </View>
       ) : (
-        <View>
+        <View className='profile-content'>
           <View className='card user-card'>
-            <Text className='user-name'>{session.user.display_name}</Text>
-            <Text className='muted'>用户 ID：{session.user.id}</Text>
-            <Button size='mini' plain onClick={handleLogout}>
-              退出登录
-            </Button>
-          </View>
-
-          <Text className='section-title'>家庭选择</Text>
-          <View className='pill-row'>
-            {session.families.map((family) => (
-              <View
-                key={family.id}
-                className={`pill ${family.id === activeFamilyId ? 'active' : ''}`}
-                onClick={() => void handleFamilySwitch(family.id)}
-              >
-                <Text>{family.name}</Text>
+            <View className='h-stack user-header'>
+              <View>
+                <Text className='user-name'>{session.user.display_name}</Text>
+                <Text className='muted'>用户 ID：{session.user.id}</Text>
               </View>
-            ))}
-          </View>
-
-          <View className='card profile-form-card'>
-            <Text className='form-title'>创建家庭</Text>
-            <View className='form-item'>
-              <Text className='form-label'>家庭名称</Text>
-              <Input
-                className='input'
-                value={newFamilyName}
-                onInput={(event) => setNewFamilyName(event.detail.value)}
-                placeholder='例如 张家'
-              />
+              <Button size='mini' plain onClick={handleLogout}>
+                退出登录
+              </Button>
             </View>
-            <View className='form-item'>
-              <Text className='form-label'>时区</Text>
-              <Input
-                className='input'
-                value={newFamilyTimezone}
-                onInput={(event) => setNewFamilyTimezone(event.detail.value)}
-                placeholder='Asia/Shanghai'
-              />
-            </View>
-            <Button className='btn-primary' loading={isFamilyLoading} onClick={() => void handleCreateFamily()}>
-              创建并切换家庭
-            </Button>
-          </View>
-
-          {activeFamilyRole === 'owner' ? (
-            <View className='card profile-form-card'>
-              <Text className='form-title'>邀请成员</Text>
-              <View className='form-item'>
-                <Text className='form-label'>成员手机号</Text>
-                <Input
-                  className='input'
-                  type='number'
-                  maxlength={11}
-                  value={invitePhone}
-                  onInput={(event) => setInvitePhone(event.detail.value)}
-                  placeholder='请输入 11 位手机号'
-                />
+            <View className='meta-grid'>
+              <View className='meta-item'>
+                <Text className='meta-label'>当前家庭</Text>
+                <Text className='meta-value'>{activeFamily?.name || '未选择'}</Text>
               </View>
-              <View className='form-item'>
-                <Text className='form-label'>角色</Text>
+              <View className='meta-item'>
+                <Text className='meta-label'>当前宝宝</Text>
+                <Text className='meta-value'>{activeBaby?.name || '未选择'}</Text>
+              </View>
+              <View className='meta-item'>
+                <Text className='meta-label'>家庭角色</Text>
+                <Text className='meta-value'>{activeFamilyRoleText}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View className='card quick-switch-card'>
+            <Text className='form-title'>日常使用</Text>
+            <View className='quick-block'>
+              <Text className='form-label'>切换家庭</Text>
+              {session.families.length > 0 ? (
                 <View className='pill-row'>
-                  {(['caregiver', 'viewer', 'owner'] as FamilyMemberRole[]).map((role) => (
+                  {session.families.map((family) => (
                     <View
-                      key={role}
-                      className={`pill ${inviteRole === role ? 'active' : ''}`}
-                      onClick={() => setInviteRole(role)}
+                      key={family.id}
+                      className={`pill ${family.id === activeFamilyId ? 'active' : ''}`}
+                      onClick={() => void handleFamilySwitch(family.id)}
                     >
-                      <Text>{role}</Text>
+                      <Text>{family.name}</Text>
                     </View>
                   ))}
                 </View>
-              </View>
-              <Button plain loading={isInviteLoading} onClick={() => void handleInviteMember()}>
-                发送邀请
-              </Button>
+              ) : (
+                <Text className='muted'>暂无家庭，可在下方管理区创建。</Text>
+              )}
             </View>
-          ) : null}
 
-          <Text className='section-title'>宝宝选择</Text>
-          {isBabyLoading && <Text className='muted'>宝宝数据加载中...</Text>}
-
-          {!isBabyLoading && babies.length > 0 && (
-            <View className='pill-row'>
-              {babies.map((baby) => (
-                <View
-                  key={baby.id}
-                  className={`pill ${baby.id === activeBabyId ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveBabyId(baby.id)
-                    setActiveBabyIdState(baby.id)
-                  }}
-                >
-                  <Text>{baby.name}</Text>
+            <View className='quick-block'>
+              <Text className='form-label'>切换宝宝</Text>
+              {isBabyLoading ? <Text className='muted'>宝宝数据加载中...</Text> : null}
+              {!isBabyLoading && babies.length > 0 ? (
+                <View className='pill-row'>
+                  {babies.map((baby) => (
+                    <View
+                      key={baby.id}
+                      className={`pill ${baby.id === activeBabyId ? 'active' : ''}`}
+                      onClick={() => {
+                        setActiveBabyId(baby.id)
+                        setActiveBabyIdState(baby.id)
+                      }}
+                    >
+                      <Text>{baby.name}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
+              ) : null}
+              {!isBabyLoading && babies.length === 0 ? (
+                <View className='empty-inline'>
+                  <Text className='muted'>当前家庭还没有宝宝档案</Text>
+                  <Button size='mini' plain onClick={() => setIsBabyManageOpen(true)}>
+                    去创建
+                  </Button>
+                </View>
+              ) : null}
             </View>
-          )}
-
-          {!isBabyLoading && babies.length === 0 && (
-            <View className='card empty-card'>
-              <Text className='muted'>当前家庭还没有宝宝档案，请先创建。</Text>
-            </View>
-          )}
-
-          <View className='card profile-form-card'>
-            <Text className='form-title'>创建宝宝</Text>
-            <View className='form-item'>
-              <Text className='form-label'>宝宝姓名</Text>
-              <Input
-                className='input'
-                value={newBabyName}
-                onInput={(event) => setNewBabyName(event.detail.value)}
-                placeholder='例如 小麦'
-              />
-            </View>
-
-            <View className='form-item'>
-              <Text className='form-label'>出生日期</Text>
-              <Picker
-                mode='date'
-                value={newBabyBirthDate}
-                start='2010-01-01'
-                end='2035-12-31'
-                onChange={(event) => setNewBabyBirthDate(event.detail.value)}
-              >
-                <View className='input picker-like'>{newBabyBirthDate}</View>
-              </Picker>
-            </View>
-
-            <View className='form-item'>
-              <Text className='form-label'>出生体重（g，可选）</Text>
-              <Input
-                className='input'
-                value={newBabyWeight}
-                type='number'
-                onInput={(event) => setNewBabyWeight(event.detail.value)}
-                placeholder='例如 3200'
-              />
-            </View>
-
-            <Button className='btn-primary' loading={isBabyLoading} onClick={() => void handleCreateBaby()}>
-              创建宝宝档案
-            </Button>
           </View>
 
-          {activeBaby ? (
-            <View className='card profile-form-card'>
-              <Text className='form-title'>编辑宝宝档案</Text>
-              <View className='form-item'>
-                <Text className='form-label'>昵称</Text>
-                <Input
-                  className='input'
-                  value={editNickname}
-                  onInput={(event) => setEditNickname(event.detail.value)}
-                  placeholder='例如 小麦同学'
-                />
-              </View>
-              <View className='form-item'>
-                <Text className='form-label'>体重（g）</Text>
-                <Input
-                  className='input'
-                  type='digit'
-                  value={editWeight}
-                  onInput={(event) => setEditWeight(event.detail.value)}
-                  placeholder='例如 5600'
-                />
-              </View>
-              <View className='form-item'>
-                <Text className='form-label'>身高（cm）</Text>
-                <Input
-                  className='input'
-                  type='digit'
-                  value={editHeight}
-                  onInput={(event) => setEditHeight(event.detail.value)}
-                  placeholder='例如 61.5'
-                />
-              </View>
-              <View className='form-item'>
-                <Text className='form-label'>头围（cm）</Text>
-                <Input
-                  className='input'
-                  type='digit'
-                  value={editHeadCircumference}
-                  onInput={(event) => setEditHeadCircumference(event.detail.value)}
-                  placeholder='例如 40.2'
-                />
-              </View>
-              <Button className='btn-primary' loading={isUpdatingBaby} onClick={() => void handleUpdateBaby()}>
-                保存宝宝信息
-              </Button>
+          <View className='manage-header'>
+            <Text className='section-title'>高级管理</Text>
+            <Text className='section-caption'>低频操作已折叠，按需展开</Text>
+          </View>
+
+          <View className='card collapse-card'>
+            <View className='collapse-head' onClick={() => setIsFamilyManageOpen((prev) => !prev)}>
+              <Text className='collapse-title'>家庭管理</Text>
+              <Text className='collapse-action'>{isFamilyManageOpen ? '收起' : '展开'}</Text>
             </View>
-          ) : null}
+            {isFamilyManageOpen ? (
+              <View className='collapse-body'>
+                <View className='manage-block'>
+                  <Text className='form-title'>创建家庭</Text>
+                  <View className='form-item'>
+                    <Text className='form-label'>家庭名称</Text>
+                    <Input
+                      className='input'
+                      value={newFamilyName}
+                      onInput={(event) => setNewFamilyName(event.detail.value)}
+                      placeholder='例如 张家'
+                    />
+                  </View>
+                  <View className='form-item'>
+                    <Text className='form-label'>时区</Text>
+                    <Input
+                      className='input'
+                      value={newFamilyTimezone}
+                      onInput={(event) => setNewFamilyTimezone(event.detail.value)}
+                      placeholder='Asia/Shanghai'
+                    />
+                  </View>
+                  <Button className='btn-primary' loading={isFamilyLoading} onClick={() => void handleCreateFamily()}>
+                    创建并切换家庭
+                  </Button>
+                </View>
+                {activeFamilyRole === 'owner' ? (
+                  <View className='manage-block'>
+                    <Text className='form-title'>邀请成员</Text>
+                    <View className='form-item'>
+                      <Text className='form-label'>成员手机号</Text>
+                      <Input
+                        className='input'
+                        type='number'
+                        maxlength={11}
+                        value={invitePhone}
+                        onInput={(event) => setInvitePhone(event.detail.value)}
+                        placeholder='请输入 11 位手机号'
+                      />
+                    </View>
+                    <View className='form-item'>
+                      <Text className='form-label'>角色</Text>
+                      <View className='pill-row'>
+                        {inviteRoleOptions.map((roleOption) => (
+                          <View
+                            key={roleOption.value}
+                            className={`pill ${inviteRole === roleOption.value ? 'active' : ''}`}
+                            onClick={() => setInviteRole(roleOption.value)}
+                          >
+                            <Text>{roleOption.label}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                    <Button plain loading={isInviteLoading} onClick={() => void handleInviteMember()}>
+                      发送邀请
+                    </Button>
+                  </View>
+                ) : (
+                  <Text className='muted owner-hint'>仅管理员可邀请成员。</Text>
+                )}
+              </View>
+            ) : null}
+          </View>
+
+          <View className='card collapse-card'>
+            <View className='collapse-head' onClick={() => setIsBabyManageOpen((prev) => !prev)}>
+              <Text className='collapse-title'>宝宝档案管理</Text>
+              <Text className='collapse-action'>{isBabyManageOpen ? '收起' : '展开'}</Text>
+            </View>
+            {isBabyManageOpen ? (
+              <View className='collapse-body'>
+                <View className='manage-block'>
+                  <Text className='form-title'>创建宝宝</Text>
+                  <View className='form-item'>
+                    <Text className='form-label'>宝宝姓名</Text>
+                    <Input
+                      className='input'
+                      value={newBabyName}
+                      onInput={(event) => setNewBabyName(event.detail.value)}
+                      placeholder='例如 小麦'
+                    />
+                  </View>
+
+                  <View className='form-item'>
+                    <Text className='form-label'>出生日期</Text>
+                    <Picker
+                      mode='date'
+                      value={newBabyBirthDate}
+                      start='2010-01-01'
+                      end='2035-12-31'
+                      onChange={(event) => setNewBabyBirthDate(event.detail.value)}
+                    >
+                      <View className='input picker-like'>{newBabyBirthDate}</View>
+                    </Picker>
+                  </View>
+
+                  <View className='form-item'>
+                    <Text className='form-label'>出生体重（g，可选）</Text>
+                    <Input
+                      className='input'
+                      value={newBabyWeight}
+                      type='number'
+                      onInput={(event) => setNewBabyWeight(event.detail.value)}
+                      placeholder='例如 3200'
+                    />
+                  </View>
+
+                  <Button className='btn-primary' loading={isBabyLoading} onClick={() => void handleCreateBaby()}>
+                    创建宝宝档案
+                  </Button>
+                </View>
+
+                {activeBaby ? (
+                  <View className='manage-block'>
+                    <Text className='form-title'>编辑宝宝档案</Text>
+                    <View className='form-item'>
+                      <Text className='form-label'>昵称</Text>
+                      <Input
+                        className='input'
+                        value={editNickname}
+                        onInput={(event) => setEditNickname(event.detail.value)}
+                        placeholder='例如 小麦同学'
+                      />
+                    </View>
+                    <View className='form-item'>
+                      <Text className='form-label'>体重（g）</Text>
+                      <Input
+                        className='input'
+                        type='digit'
+                        value={editWeight}
+                        onInput={(event) => setEditWeight(event.detail.value)}
+                        placeholder='例如 5600'
+                      />
+                    </View>
+                    <View className='form-item'>
+                      <Text className='form-label'>身高（cm）</Text>
+                      <Input
+                        className='input'
+                        type='digit'
+                        value={editHeight}
+                        onInput={(event) => setEditHeight(event.detail.value)}
+                        placeholder='例如 61.5'
+                      />
+                    </View>
+                    <View className='form-item'>
+                      <Text className='form-label'>头围（cm）</Text>
+                      <Input
+                        className='input'
+                        type='digit'
+                        value={editHeadCircumference}
+                        onInput={(event) => setEditHeadCircumference(event.detail.value)}
+                        placeholder='例如 40.2'
+                      />
+                    </View>
+                    <Button
+                      className='btn-primary'
+                      loading={isUpdatingBaby}
+                      onClick={() => void handleUpdateBaby()}
+                    >
+                      保存宝宝信息
+                    </Button>
+                  </View>
+                ) : (
+                  <View className='manage-block'>
+                    <Text className='muted'>请选择宝宝后再编辑档案。</Text>
+                  </View>
+                )}
+              </View>
+            ) : null}
+          </View>
         </View>
       )}
     </View>

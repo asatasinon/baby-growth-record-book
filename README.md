@@ -35,6 +35,15 @@ pnpm db:seed        # 导入本地联调用测试数据（docs/specs/S03-test-se
 pnpm db:reset       # 等价于 db:init + db:seed
 pnpm dev:backend    # 启动后端 API（统一 main 入口）
 pnpm dev:worker     # 启动 worker
+pnpm pm2:start:backend # PM2 后台启动后端 API（关闭 reload，避免多进程冲突）
+pnpm pm2:start:h5      # PM2 后台启动 H5 开发服务
+pnpm pm2:start:all     # 一键启动后端 + H5
+pnpm pm2:list          # 查看 PM2 进程列表
+pnpm pm2:logs:backend  # 查看后端日志
+pnpm pm2:logs:h5       # 查看 H5 日志
+pnpm pm2:stop:backend  # 停止后端 PM2 进程
+pnpm pm2:stop:h5       # 停止 H5 PM2 进程
+pnpm pm2:stop:all      # 一键停止后端 + H5
 pnpm check          # ruff check --fix（backend + worker）
 pnpm lint           # backend/worker lint + frontend build 校验
 ```

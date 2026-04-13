@@ -28,6 +28,14 @@ class AlertRuleCreateRequest(BaseModel):
     enabled: bool = True
 
 
+class AlertRuleUpdateRequest(BaseModel):
+    threshold_value: float | None = None
+    window_hours: int | None = None
+    window_days: int | None = None
+    severity: Literal["info", "warning", "high"] | None = None
+    enabled: bool | None = None
+
+
 def _to_float(value: Decimal | float | None) -> float | None:
     if value is None:
         return None
@@ -127,5 +135,38 @@ async def acknowledge_alert(
             "id": to_api_id(alert.id),
             "status": alert.status,
             "acknowledged_at": alert.acknowledged_at,
+        }
+    )
+
+
+@router.patch("/rules/{rule_id}")
+async def update_rule(
+    rule_id: Annotated[IdStr, Path()],
+    payload: AlertRuleUpdateRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    rule = await db.get(AlertRule, to_db_id(rule_id))
+    if rule is None:
+        raise AppError("NOT_FOUND", "alert rule not found", status_code=404)
+
+    await assert_family_write_access(db, family_id=rule.family_id, user_id=current_user.user_id)
+
+    changes = payload.model_dump(exclude_none=True)
+    for key, value in changes.items():
+        setattr(rule, key, value)
+
+    await db.commit()
+
+    return success(
+        {
+            "id": to_api_id(rule.id),
+            "family_id": to_api_id(rule.family_id),
+            "rule_type": rule.rule_type,
+            "threshold_value": _to_float(rule.threshold_value),
+            "window_hours": rule.window_hours,
+            "window_days": rule.window_days,
+            "severity": rule.severity,
+            "enabled": rule.enabled,
         }
     )

@@ -2,7 +2,7 @@
 
 > 文档编号：T04
 > 状态：草案
-> 版本号：v0.1.0
+> 版本号：v0.2.0
 > 最后更新时间：2026-04-13
 > 审核人：待定
 > 生效日期：2026-04-13
@@ -13,6 +13,7 @@
 | 版本号 | 日期 | 变更人 | 变更说明 |
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-13 | Codex | 基于现有小程序实现与产品需求差距，创建前端小程序缺失功能补全任务。 |
+| v0.2.0 | 2026-04-13 | Codex | 完成 T04-01 ～ T04-10：补齐微信登录、家庭/成员、事件与宝宝编辑、规则创建、导出下载、图表、周月汇总与新增事件类型录入。 |
 
 ## 文档目的
 - 补全 `frontend/miniapp` 中已有页面骨架但功能缺失、或尚未创建的页面与交互。
@@ -44,7 +45,7 @@
 - T01 已完成（PATCH 事件、家庭管理、宝宝编辑接口稳定）
 
 ## 执行状态
-未开始
+已完成
 
 ## 执行 owner
 - owner 角色：前端负责人
@@ -56,7 +57,7 @@
 ## 执行排期
 - 优先级：P1
 - ETA：待定
-- 实际完成时间：待完成
+- 实际完成时间：2026-04-13
 - 排期维护要求：排期变化时同步更新 `T00`。
 
 ## 预计输入
@@ -83,8 +84,8 @@
 | T01 POST /families/{family_id}/members | 内部任务 | 已完成 | 成员邀请接口已存在 |
 | T01 POST /alerts/rules | 内部任务 | 已完成 | 规则创建接口已存在 |
 | T03 export_report | 内部任务 | 已完成 | 下载链接可由 Worker 生成并回写 |
-| ECharts for Taro | 外部依赖 | 待确认 | 确认 `@antv/f2` 或 `echarts-for-weixin` 在 Taro 环境下的集成方式 |
-| 微信 `wx.login` | 外部依赖 | 待确认 | 需测试环境微信 AppID 配置 |
+| ECharts for Taro | 外部依赖 | 已完成 | 已采用 ECharts + Taro Canvas 渲染真实折线图，替换文字条形图模拟。 |
+| 微信 `wx.login` | 外部依赖 | 已完成 | 已在 Profile 页接入 `wx.login` 并调用 `/auth/wechat/login`。 |
 
 ## agent 接手说明
 1. 阅读 `frontend/miniapp/src/services/api.ts` 和现有页面结构再动手。
@@ -98,16 +99,16 @@
 
 | 子任务编号 | 子状态 | 子任务 | 执行 owner | 预计输入 | 预计输出 | Done Criteria |
 | --- | --- | --- | --- | --- | --- | --- |
-| T04-01 | 未开始 | 微信 wx.login 登录流程 | `frontend-agent` | D03 `/auth/wechat/login` 规范、Profile 页现有实现 | Profile 页增加微信登录入口 | 小程序内点击微信登录能获取 session，与密码登录共享存储和后续页面逻辑。 |
-| T04-02 | 未开始 | 家庭创建 UI | `frontend-agent` | D03 POST /families、Profile 页 | Profile 页增加"创建家庭"表单 | 未加入家庭的账号可创建家庭，创建后自动选中新家庭并刷新宝宝列表。 |
-| T04-03 | 未开始 | 成员邀请 UI | `frontend-agent` | D03 POST /families/{family_id}/members | 家庭管理页面或 Profile 页增加邀请成员入口 | 家庭 owner 可通过手机号邀请成员；邀请后显示待确认状态。 |
-| T04-04 | 未开始 | 事件编辑页面（PATCH） | `frontend-agent` | D03 PATCH /events/{event_id}、Records 页 | Records 页列表项增加"编辑"入口；新建或复用编辑表单页 | 可修改事件时间、备注、payload；保存后列表刷新且数据正确。 |
-| T04-05 | 未开始 | 宝宝档案编辑（PATCH） | `frontend-agent` | D03 PATCH /babies/{baby_id}、Profile 页 | Profile 页宝宝列表增加"编辑"入口 | 可修改昵称、身高、体重、头围等字段；保存后显示更新值。 |
-| T04-06 | 未开始 | 提醒规则创建 UI | `frontend-agent` | D03 POST /alerts/rules、Alerts 页 | Alerts 页增加"新建规则"入口 | 可选择规则类型、阈值、严重级别并提交；创建后规则生效（Worker 扫描时使用）。 |
-| T04-07 | 未开始 | 导出报告下载链接展示 | `frontend-agent` | D03 GET /reports/exports/{task_id}、Reports 页 | Reports 页任务列表展示下载链接 | 任务状态为 `succeeded` 时显示可点击的下载链接；点击跳转到文件 URL。 |
-| T04-08 | 未开始 | ECharts 图表集成（替换 div 模拟） | `frontend-agent` | Taro ECharts 集成文档、Trends 页 | Trends 页使用真实图表组件渲染折线/柱状图 | 趋势图以真实图表库渲染，支持坐标轴、数据点 tooltip；在微信小程序和 H5 均可正常显示。 |
-| T04-09 | 未开始 | 周报 / 月报汇总页 | `frontend-agent` | D03 GET /summaries/weekly + monthly、T01 完成 | 新增 weekly/monthly 页面或在 Home 页增加切换 Tab | 可查看当周/当月喂养、睡眠、排泄、测量汇总数据。 |
-| T04-10 | 未开始 | 里程碑 / 用药 / 疫苗事件录入 | `frontend-agent` | D03 POST /events event_type 枚举、首页快速录入 | 首页或 Records 页增加这三类事件的录入 UI 和 payload 字段 | 可录入里程碑描述、用药名称+剂量、疫苗名称；提交后出现在记录列表。 |
+| T04-01 | 已完成 | 微信 wx.login 登录流程 | `frontend-agent` | D03 `/auth/wechat/login` 规范、Profile 页现有实现 | Profile 页增加微信登录入口 | 小程序内点击微信登录能获取 session，与密码登录共享存储和后续页面逻辑。 |
+| T04-02 | 已完成 | 家庭创建 UI | `frontend-agent` | D03 POST /families、Profile 页 | Profile 页增加"创建家庭"表单 | 未加入家庭的账号可创建家庭，创建后自动选中新家庭并刷新宝宝列表。 |
+| T04-03 | 已完成 | 成员邀请 UI | `frontend-agent` | D03 POST /families/{family_id}/members | 家庭管理页面或 Profile 页增加邀请成员入口 | 家庭 owner 可通过手机号邀请成员；邀请后显示待确认状态。 |
+| T04-04 | 已完成 | 事件编辑页面（PATCH） | `frontend-agent` | D03 PATCH /events/{event_id}、Records 页 | Records 页列表项增加"编辑"入口；新建或复用编辑表单页 | 可修改事件时间、备注、payload；保存后列表刷新且数据正确。 |
+| T04-05 | 已完成 | 宝宝档案编辑（PATCH） | `frontend-agent` | D03 PATCH /babies/{baby_id}、Profile 页 | Profile 页宝宝列表增加"编辑"入口 | 可修改昵称、身高、体重、头围等字段；保存后显示更新值。 |
+| T04-06 | 已完成 | 提醒规则创建 UI | `frontend-agent` | D03 POST /alerts/rules、Alerts 页 | Alerts 页增加"新建规则"入口 | 可选择规则类型、阈值、严重级别并提交；创建后规则生效（Worker 扫描时使用）。 |
+| T04-07 | 已完成 | 导出报告下载链接展示 | `frontend-agent` | D03 GET /reports/exports/{task_id}、Reports 页 | Reports 页任务列表展示下载链接 | 任务状态为 `succeeded` 时显示可点击的下载链接；点击跳转到文件 URL。 |
+| T04-08 | 已完成 | ECharts 图表集成（替换 div 模拟） | `frontend-agent` | Taro ECharts 集成文档、Trends 页 | Trends 页使用真实图表组件渲染折线/柱状图 | 趋势图以真实图表库渲染，支持坐标轴、数据点 tooltip；在微信小程序和 H5 均可正常显示。 |
+| T04-09 | 已完成 | 周报 / 月报汇总页 | `frontend-agent` | D03 GET /summaries/weekly + monthly、T01 完成 | 新增 weekly/monthly 页面或在 Home 页增加切换 Tab | 可查看当周/当月喂养、睡眠、排泄、测量汇总数据。 |
+| T04-10 | 已完成 | 里程碑 / 用药 / 疫苗事件录入 | `frontend-agent` | D03 POST /events event_type 枚举、首页快速录入 | 首页或 Records 页增加这三类事件的录入 UI 和 payload 字段 | 可录入里程碑描述、用药名称+剂量、疫苗名称；提交后出现在记录列表。 |
 | T04-11 | 未开始 | H5 分享页（低优先级） | `frontend-agent` | A01 H5 需求、分享令牌接口（report 模块） | 独立 H5 路由，展示宝宝成长数据 | 通过分享链接访问时能展示基础成长数据，无需登录；令牌过期后显示友好提示。 |
 
 ## 完成标准
@@ -121,3 +122,4 @@
 | 时间 | 交接人 | 接手人 | 说明 |
 | --- | --- | --- | --- |
 | 2026-04-13 | Codex | `frontend-agent` | 任务文档初始化，等待 T01 核心接口完成后启动。 |
+| 2026-04-13 | `frontend-agent` | Codex | T04-01 ～ T04-10 已完成并通过 `pnpm --filter @baby-growth/miniapp build:weapp` 与 `pnpm --filter @baby-growth/miniapp build:h5` 构建验证；T04-11 保持低优先级待后续。 |

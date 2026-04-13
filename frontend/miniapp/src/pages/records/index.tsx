@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { Button, Text, View } from '@tarojs/components'
+import { Button, Input, Picker, Text, Textarea, View } from '@tarojs/components'
 
 import {
   EVENT_TYPE_COLOR_MAP,
@@ -8,10 +8,10 @@ import {
   EVENT_TYPE_OPTIONS,
   EXCRETION_LABEL_MAP
 } from '@/constants/event'
-import { deleteEvent, listEvents } from '@/services/api'
+import { deleteEvent, getEvent, listEvents, updateEvent } from '@/services/api'
 import { getActiveBabyId, getActiveFamilyId, getSession } from '@/services/storage'
 import type { EventType, GrowthEvent } from '@/types/domain'
-import { dayWindow, formatDateTime, formatMinutes } from '@/utils/time'
+import { dayWindow, formatDate, formatDateTime, formatMinutes, formatTime, parseDateTimeToMs } from '@/utils/time'
 
 import './index.scss'
 
@@ -53,7 +53,13 @@ export default function RecordsPage() {
   const [events, setEvents] = useState<GrowthEvent[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string>('')
+  const [editingId, setEditingId] = useState<string>('')
+  const [isEditingLoading, setIsEditingLoading] = useState(false)
   const [filterType, setFilterType] = useState<EventFilterType>('all')
+  const [editDate, setEditDate] = useState(formatDate(Date.now()))
+  const [editTime, setEditTime] = useState(formatTime(Date.now()))
+  const [editNotes, setEditNotes] = useState('')
+  const [editPayloadText, setEditPayloadText] = useState('{}')
 
   const hasContext = Boolean(
     getSession() && getActiveFamilyId(getSession() || undefined) && getActiveBabyId()
@@ -108,6 +114,67 @@ export default function RecordsPage() {
       Taro.showToast({ title: (error as Error).message || '删除失败', icon: 'none' })
     } finally {
       setDeletingId('')
+    }
+  }
+
+  async function handleEditStart(eventId: string): Promise<void> {
+    const session = getSession()
+    if (!session) {
+      return
+    }
+    setEditingId(eventId)
+    setIsEditingLoading(true)
+    try {
+      const detail = await getEvent(session, eventId)
+      setEditDate(formatDate(detail.occurred_at))
+      setEditTime(formatTime(detail.occurred_at))
+      setEditNotes(detail.notes || '')
+      setEditPayloadText(JSON.stringify(detail.payload || {}, null, 2))
+    } catch (error) {
+      setEditingId('')
+      Taro.showToast({ title: (error as Error).message || '加载事件详情失败', icon: 'none' })
+    } finally {
+      setIsEditingLoading(false)
+    }
+  }
+
+  function handleEditCancel(): void {
+    setEditingId('')
+    setEditNotes('')
+    setEditPayloadText('{}')
+  }
+
+  async function handleEditSave(eventId: string): Promise<void> {
+    const session = getSession()
+    if (!session) {
+      return
+    }
+
+    let parsedPayload: Record<string, unknown>
+    try {
+      parsedPayload = JSON.parse(editPayloadText) as Record<string, unknown>
+      if (Array.isArray(parsedPayload) || parsedPayload === null) {
+        throw new Error('payload 必须是 JSON 对象')
+      }
+    } catch (error) {
+      Taro.showToast({ title: (error as Error).message || 'payload 不是有效 JSON', icon: 'none' })
+      return
+    }
+
+    setIsEditingLoading(true)
+    try {
+      await updateEvent(session, eventId, {
+        occurredAt: parseDateTimeToMs(editDate, editTime),
+        notes: editNotes.trim() || undefined,
+        payload: parsedPayload
+      })
+      Taro.showToast({ title: '事件已更新', icon: 'success' })
+      handleEditCancel()
+      await loadRecords()
+    } catch (error) {
+      Taro.showToast({ title: (error as Error).message || '更新失败', icon: 'none' })
+    } finally {
+      setIsEditingLoading(false)
     }
   }
 
@@ -177,12 +244,59 @@ export default function RecordsPage() {
               <Button
                 size='mini'
                 plain
+                loading={isEditingLoading && editingId === event.id}
+                onClick={() => void handleEditStart(event.id)}
+              >
+                编辑
+              </Button>
+              <Button
+                size='mini'
+                plain
                 loading={deletingId === event.id}
                 onClick={() => void handleDelete(event.id)}
               >
                 删除
               </Button>
             </View>
+            {editingId === event.id ? (
+              <View className='edit-panel'>
+                <Text className='form-label'>发生日期</Text>
+                <Picker mode='date' value={editDate} onChange={(evt) => setEditDate(evt.detail.value)}>
+                  <View className='input picker-like'>{editDate}</View>
+                </Picker>
+                <Text className='form-label'>发生时间</Text>
+                <Picker mode='time' value={editTime} onChange={(evt) => setEditTime(evt.detail.value)}>
+                  <View className='input picker-like'>{editTime}</View>
+                </Picker>
+                <Text className='form-label'>备注</Text>
+                <Input
+                  className='input'
+                  value={editNotes}
+                  onInput={(evt) => setEditNotes(evt.detail.value)}
+                  placeholder='可选备注'
+                />
+                <Text className='form-label'>Payload（JSON）</Text>
+                <Textarea
+                  className='input payload-textarea'
+                  value={editPayloadText}
+                  onInput={(evt) => setEditPayloadText(evt.detail.value)}
+                  maxlength={-1}
+                />
+                <View className='edit-actions'>
+                  <Button size='mini' onClick={handleEditCancel}>
+                    取消
+                  </Button>
+                  <Button
+                    size='mini'
+                    type='primary'
+                    loading={isEditingLoading}
+                    onClick={() => void handleEditSave(event.id)}
+                  >
+                    保存
+                  </Button>
+                </View>
+              </View>
+            ) : null}
           </View>
         ))}
       </View>

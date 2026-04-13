@@ -28,5 +28,29 @@
     margin-top: 14rpx;
     display: flex;
     justify-content: flex-end;
+    gap: 12rpx;
+  }
+
+  .edit-panel {
+    margin-top: 16rpx;
+    padding-top: 12rpx;
+    border-top: 1rpx dashed #cddcf4;
+  }
+
+  .picker-like {
+    line-height: 1.6;
+    color: var(--text-main);
+  }
+
+  .payload-textarea {
+    min-height: 180rpx;
+    line-height: 1.5;
+  }
+
+  .edit-actions {
+    margin-top: 16rpx;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10rpx;
   }
 }

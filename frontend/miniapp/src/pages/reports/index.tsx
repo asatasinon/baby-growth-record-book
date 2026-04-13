@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Button, Picker, Text, View } from '@tarojs/components'
 
-import { createExportTask, listExportTasks } from '@/services/api'
+import { createExportTask, getExportTask, listExportTasks } from '@/services/api'
 import { getActiveBabyId, getActiveFamilyId, getSession } from '@/services/storage'
 import type { ExportReportType, ExportTask } from '@/types/domain'
 import { DAY_MS, formatDate, formatDateTime, parseDateToStartMs, startOfDayMs } from '@/utils/time'
@@ -48,6 +48,7 @@ export default function ReportsPage() {
   const [tasks, setTasks] = useState<ExportTask[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
+  const [checkingTaskId, setCheckingTaskId] = useState('')
 
   const [reportType, setReportType] = useState<ExportReportType>('weekly')
   const [dateFromText, setDateFromText] = useState(formatDate(startOfDayMs(Date.now() - 6 * DAY_MS)))
@@ -123,6 +124,52 @@ export default function ReportsPage() {
     }
   }
 
+  async function handleOpenLink(url: string): Promise<void> {
+    try {
+      if (process.env.TARO_ENV === 'h5' && typeof window !== 'undefined') {
+        window.open(url, '_blank')
+        return
+      }
+
+      const downloadResult = await Taro.downloadFile({ url })
+      if (downloadResult.statusCode !== 200 || !downloadResult.tempFilePath) {
+        throw new Error('下载文件失败')
+      }
+      await Taro.openDocument({ filePath: downloadResult.tempFilePath, showMenu: true })
+    } catch (_error) {
+      await handleCopyLink(url)
+    }
+  }
+
+  async function handleRefreshTask(taskId: string): Promise<void> {
+    const session = getSession()
+    if (!session) {
+      return
+    }
+
+    setCheckingTaskId(taskId)
+    try {
+      const latest = await getExportTask(session, taskId)
+      setTasks((current) =>
+        current.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                status: latest.status,
+                download_url: latest.download_url,
+                expires_at: latest.expires_at
+              }
+            : task
+        )
+      )
+      Taro.showToast({ title: '状态已更新', icon: 'success' })
+    } catch (error) {
+      Taro.showToast({ title: (error as Error).message || '刷新状态失败', icon: 'none' })
+    } finally {
+      setCheckingTaskId('')
+    }
+  }
+
   if (!resolveContext()) {
     return (
       <View className='page-shell reports-page'>
@@ -194,11 +241,24 @@ export default function ReportsPage() {
               </Text>
               {task.download_url ? (
                 <View className='task-actions'>
+                  <Button size='mini' onClick={() => void handleOpenLink(task.download_url || '')}>
+                    打开下载
+                  </Button>
                   <Button size='mini' onClick={() => void handleCopyLink(task.download_url || '')}>
                     复制下载链接
                   </Button>
                 </View>
-              ) : null}
+              ) : (
+                <View className='task-actions'>
+                  <Button
+                    size='mini'
+                    loading={checkingTaskId === task.id}
+                    onClick={() => void handleRefreshTask(task.id)}
+                  >
+                    刷新状态
+                  </Button>
+                </View>
+              )}
             </View>
           ))}
         </View>

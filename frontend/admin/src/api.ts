@@ -1,4 +1,6 @@
 import type {
+  AiConversation,
+  AlertRule,
   AlertEvent,
   ApiEnvelope,
   AuthSession,
@@ -122,5 +124,73 @@ export function listExportTasks(token: string, familyId: string): Promise<Export
     query: {
       family_id: familyId
     }
+  })
+}
+
+export function listAlertRules(token: string): Promise<AlertRule[]> {
+  return request<AlertRule[]>({
+    path: '/admin/alert-rules',
+    token
+  })
+}
+
+interface CreateAlertRulePayload {
+  familyId: string
+  ruleType: string
+  thresholdValue?: number
+  windowHours?: number
+  windowDays?: number
+  severity: 'info' | 'warning' | 'high'
+  enabled: boolean
+}
+
+export function createAlertRule(token: string, payload: CreateAlertRulePayload): Promise<AlertRule> {
+  return request<AlertRule>({
+    path: '/alerts/rules',
+    method: 'POST',
+    token,
+    data: {
+      family_id: payload.familyId,
+      rule_type: payload.ruleType,
+      threshold_value: payload.thresholdValue,
+      window_hours: payload.windowHours,
+      window_days: payload.windowDays,
+      severity: payload.severity,
+      enabled: payload.enabled
+    }
+  })
+}
+
+interface UpdateAlertRulePayload {
+  thresholdValue?: number
+  windowHours?: number
+  windowDays?: number
+  severity?: 'info' | 'warning' | 'high'
+  enabled?: boolean
+}
+
+export function updateAlertRule(
+  token: string,
+  ruleId: string,
+  payload: UpdateAlertRulePayload
+): Promise<AlertRule> {
+  return request<AlertRule>({
+    path: `/alerts/rules/${ruleId}`,
+    method: 'PATCH',
+    token,
+    data: {
+      threshold_value: payload.thresholdValue,
+      window_hours: payload.windowHours,
+      window_days: payload.windowDays,
+      severity: payload.severity,
+      enabled: payload.enabled
+    }
+  })
+}
+
+export function listAiConversations(token: string): Promise<AiConversation[]> {
+  return request<AiConversation[]>({
+    path: '/admin/ai-conversations',
+    token
   })
 }

@@ -1,6 +1,7 @@
 import { request } from '@/services/http'
 import type {
   AlertEvent,
+  AlertRule,
   AiAnswer,
   AuthSession,
   BabyInfo,
@@ -9,8 +10,12 @@ import type {
   ExportReportType,
   ExportTask,
   ExportTaskCreateResult,
+  FamilyInfo,
+  FamilyMemberInviteResult,
   GrowthEvent,
-  TrendResult
+  MonthlySummary,
+  TrendResult,
+  WeeklySummary
 } from '@/types/domain'
 
 interface SessionContext {
@@ -27,6 +32,58 @@ export async function loginWithPassword(phone: string, password: string): Promis
     path: '/auth/password/login',
     method: 'POST',
     data: { phone, password }
+  })
+}
+
+export async function loginWithWechat(code: string, phone: string): Promise<AuthSession> {
+  return request<AuthSession>({
+    path: '/auth/wechat/login',
+    method: 'POST',
+    data: {
+      code,
+      phone
+    }
+  })
+}
+
+interface CreateFamilyPayload {
+  name: string
+  timezone?: string
+}
+
+export async function createFamily(
+  session: AuthSession,
+  payload: CreateFamilyPayload
+): Promise<FamilyInfo> {
+  return request<FamilyInfo>({
+    path: '/families',
+    method: 'POST',
+    token: session.access_token,
+    data: {
+      name: payload.name,
+      timezone: payload.timezone || 'Asia/Shanghai'
+    }
+  })
+}
+
+interface InviteFamilyMemberPayload {
+  inviteePhone: string
+  role: 'owner' | 'caregiver' | 'viewer'
+}
+
+export async function inviteFamilyMember(
+  session: AuthSession,
+  familyId: string,
+  payload: InviteFamilyMemberPayload
+): Promise<FamilyMemberInviteResult> {
+  return request<FamilyMemberInviteResult>({
+    path: `/families/${familyId}/members`,
+    method: 'POST',
+    token: session.access_token,
+    data: {
+      invitee_phone: payload.inviteePhone,
+      role: payload.role
+    }
   })
 }
 
@@ -63,6 +120,31 @@ export async function createBaby(
       gender: payload.gender || 'unknown',
       birth_date: payload.birthDateMs,
       birth_weight_g: payload.birthWeightG
+    }
+  })
+}
+
+interface UpdateBabyPayload {
+  nickname?: string
+  birthWeightG?: number
+  birthHeightCm?: number
+  birthHeadCircumferenceCm?: number
+}
+
+export async function updateBaby(
+  session: AuthSession,
+  babyId: string,
+  payload: UpdateBabyPayload
+): Promise<BabyInfo> {
+  return request<BabyInfo>({
+    path: `/babies/${babyId}`,
+    method: 'PATCH',
+    token: session.access_token,
+    data: {
+      nickname: payload.nickname,
+      birth_weight_g: payload.birthWeightG,
+      birth_height_cm: payload.birthHeightCm,
+      birth_head_circumference_cm: payload.birthHeadCircumferenceCm
     }
   })
 }
@@ -105,6 +187,40 @@ export async function createEvent(payload: CreateEventPayload): Promise<GrowthEv
       event_type: payload.eventType,
       occurred_at: payload.occurredAt,
       timezone: 'Asia/Shanghai',
+      notes: payload.notes,
+      payload: payload.payload
+    }
+  })
+}
+
+export async function getEvent(session: AuthSession, eventId: string): Promise<GrowthEvent> {
+  return request<GrowthEvent>({
+    path: `/events/${eventId}`,
+    token: session.access_token
+  })
+}
+
+interface UpdateEventPayload {
+  occurredAt?: number
+  startAt?: number
+  endAt?: number
+  notes?: string
+  payload?: Record<string, unknown>
+}
+
+export async function updateEvent(
+  session: AuthSession,
+  eventId: string,
+  payload: UpdateEventPayload
+): Promise<GrowthEvent> {
+  return request<GrowthEvent>({
+    path: `/events/${eventId}`,
+    method: 'PATCH',
+    token: session.access_token,
+    data: {
+      occurred_at: payload.occurredAt,
+      start_at: payload.startAt,
+      end_at: payload.endAt,
       notes: payload.notes,
       payload: payload.payload
     }
@@ -191,6 +307,32 @@ export async function listAlerts(params: ListAlertsParams): Promise<AlertEvent[]
   })
 }
 
+interface CreateAlertRuleParams extends SessionContext {
+  ruleType: string
+  thresholdValue?: number
+  windowHours?: number
+  windowDays?: number
+  severity: 'info' | 'warning' | 'high'
+  enabled?: boolean
+}
+
+export async function createAlertRule(params: CreateAlertRuleParams): Promise<AlertRule> {
+  return request<AlertRule>({
+    path: '/alerts/rules',
+    method: 'POST',
+    token: params.session.access_token,
+    data: {
+      family_id: params.familyId,
+      rule_type: params.ruleType,
+      threshold_value: params.thresholdValue,
+      window_hours: params.windowHours,
+      window_days: params.windowDays,
+      severity: params.severity,
+      enabled: params.enabled ?? true
+    }
+  })
+}
+
 export async function acknowledgeAlert(
   session: AuthSession,
   alertId: string
@@ -229,6 +371,48 @@ export async function listExportTasks(context: SessionContext): Promise<ExportTa
     token: context.session.access_token,
     query: {
       family_id: context.familyId
+    }
+  })
+}
+
+export async function getExportTask(
+  session: AuthSession,
+  taskId: string
+): Promise<ExportTaskCreateResult> {
+  return request<ExportTaskCreateResult>({
+    path: `/reports/exports/${taskId}`,
+    token: session.access_token
+  })
+}
+
+interface WeeklySummaryParams extends SessionBabyContext {
+  weekStart: number
+}
+
+export async function getWeeklySummary(params: WeeklySummaryParams): Promise<WeeklySummary> {
+  return request<WeeklySummary>({
+    path: '/summaries/weekly',
+    token: params.session.access_token,
+    query: {
+      family_id: params.familyId,
+      baby_id: params.babyId,
+      week_start: params.weekStart
+    }
+  })
+}
+
+interface MonthlySummaryParams extends SessionBabyContext {
+  monthStart: number
+}
+
+export async function getMonthlySummary(params: MonthlySummaryParams): Promise<MonthlySummary> {
+  return request<MonthlySummary>({
+    path: '/summaries/monthly',
+    token: params.session.access_token,
+    query: {
+      family_id: params.familyId,
+      baby_id: params.babyId,
+      month: params.monthStart
     }
   })
 }

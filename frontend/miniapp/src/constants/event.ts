@@ -10,7 +10,15 @@ export const EVENT_TYPE_OPTIONS: Array<{ value: EventType; label: string }> = [
   { value: 'milestone', label: '里程碑' }
 ]
 
-export const QUICK_EVENT_TYPES: EventType[] = ['feeding', 'excretion', 'sleep', 'measurement']
+export const QUICK_EVENT_TYPES: EventType[] = [
+  'feeding',
+  'excretion',
+  'sleep',
+  'measurement',
+  'medication',
+  'vaccine',
+  'milestone'
+]
 
 export const EVENT_TYPE_LABEL_MAP: Record<EventType, string> = {
   feeding: '喂养',

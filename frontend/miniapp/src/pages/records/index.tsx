@@ -182,7 +182,12 @@ export default function RecordsPage() {
 
   return (
     <View className='page-shell records-page'>
-      <Text className='section-title'>最近 30 天记录</Text>
+      <View className='header-row'>
+        <Text className='section-title'>最近 30 天记录</Text>
+        <View className='add-icon-btn' onClick={goToCreatePage}>
+          <View className='add-icon' />
+        </View>
+      </View>
       <View className='pill-row'>
         <View
           className={`pill ${filterType === 'all' ? 'active' : ''}`}
@@ -212,7 +217,7 @@ export default function RecordsPage() {
 
         {!isLoading && events.length === 0 && (
           <View className='card empty-card'>
-            <Text className='muted'>当前筛选条件下没有记录，点击右下角按钮新增一条吧。</Text>
+            <Text className='muted'>当前筛选条件下没有记录，点击右上角 + 新增一条吧。</Text>
           </View>
         )}
 
@@ -257,11 +262,6 @@ export default function RecordsPage() {
             </View>
           )
         })}
-      </View>
-
-      <View className='floating-add-btn' onClick={goToCreatePage}>
-        <View className='floating-add-icon'>+</View>
-        <Text>新增记录</Text>
       </View>
     </View>
   )

@@ -60,6 +60,14 @@
     color: #2a3c52;
   }
 
+  .relation-preset-row {
+    margin-bottom: 12rpx;
+  }
+
+  .invite-relation-input {
+    margin-top: 0;
+  }
+
   .member-list-card {
     border-radius: 24rpx;
   }
@@ -67,11 +75,11 @@
   .member-list {
     display: flex;
     flex-direction: column;
-    gap: 14rpx;
+    gap: 16rpx;
   }
 
   .member-item {
-    padding: 18rpx;
+    padding: 20rpx;
     border-radius: 16rpx;
     border: 1rpx solid #d4e6f8;
     background: rgba(255, 255, 255, 0.9);
@@ -87,21 +95,30 @@
 
   .member-meta {
     display: block;
-    margin-bottom: 10rpx;
+    margin-bottom: 14rpx;
     font-size: 23rpx;
     color: #5e718a;
+    line-height: 1.5;
   }
 
   .member-item .form-label {
-    margin-top: 10rpx;
+    margin-bottom: 10rpx;
   }
 
-  .member-item .form-label:first-of-type {
-    margin-top: 0;
+  .member-relation-item {
+    margin-bottom: 14rpx;
+  }
+
+  .member-role-item {
+    margin-bottom: 14rpx;
+  }
+
+  .member-role-row {
+    margin-bottom: 2rpx;
   }
 
   .member-save-btn {
-    margin-top: 16rpx;
+    margin-top: 0;
     width: 100%;
     min-height: 66rpx;
     border-radius: 14rpx;

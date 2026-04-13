@@ -10,7 +10,13 @@ import {
   updateFamilyMember
 } from '@/services/api'
 import { getActiveFamilyId, getSession, saveSession, setActiveFamilyId } from '@/services/storage'
-import type { AuthSession, FamilyInfo, FamilyMemberInviteResult, FamilyMemberRole } from '@/types/domain'
+import type {
+  AuthSession,
+  FamilyInfo,
+  FamilyMemberInviteResult,
+  FamilyMemberRole,
+  FamilyMemberStatus
+} from '@/types/domain'
 
 import './index.scss'
 
@@ -28,6 +34,18 @@ const roleOptions: Array<{ value: FamilyMemberRole; label: string }> = [
   { value: 'viewer', label: '查看者' },
   { value: 'owner', label: '管理员' }
 ]
+
+const roleLabelMap: Record<FamilyMemberRole, string> = {
+  caregiver: '照护者',
+  viewer: '查看者',
+  owner: '管理员'
+}
+
+const statusLabelMap: Record<FamilyMemberStatus, string> = {
+  pending: '待接受',
+  active: '已加入',
+  removed: '已移除'
+}
 
 const relationPresets = ['爸爸', '妈妈', '爷爷', '奶奶', '外公', '外婆', '叔叔', '阿姨']
 
@@ -520,7 +538,7 @@ export default function FamilyManagePage() {
           </View>
           <View className='form-item'>
             <Text className='form-label'>关系名称（可自定义）</Text>
-            <View className='pill-row'>
+            <View className='pill-row relation-preset-row'>
               {relationPresets.map((relation) => (
                 <View
                   key={relation}
@@ -532,7 +550,7 @@ export default function FamilyManagePage() {
               ))}
             </View>
             <Input
-              className='input'
+              className='input invite-relation-input'
               value={inviteRelation}
               onInput={(event) => setInviteRelation(event.detail.value)}
               placeholder='可输入自定义关系，如：二舅'
@@ -557,28 +575,31 @@ export default function FamilyManagePage() {
                 <View key={member.id} className='member-item'>
                   <Text className='member-name'>{member.user_display_name || `成员 ${member.user_id}`}</Text>
                   <Text className='member-meta'>
-                    状态：{member.status} / 角色：{member.role}
+                    状态：{statusLabelMap[member.status] || member.status} / 角色：
+                    {roleLabelMap[member.role] || member.role}
                   </Text>
-                  <Text className='form-label'>关系名称</Text>
-                  <Input
-                    className='input'
-                    value={draft?.relationLabel || ''}
-                    onInput={(event) =>
-                      setMemberDrafts((prev) => ({
-                        ...prev,
-                        [member.id]: {
-                          role: draft?.role || member.role,
-                          relationLabel: event.detail.value
-                        }
-                      }))
-                    }
-                    placeholder='例如 爸爸、妈妈、二舅'
-                  />
+                  <View className='form-item member-relation-item'>
+                    <Text className='form-label'>关系名称</Text>
+                    <Input
+                      className='input'
+                      value={draft?.relationLabel || ''}
+                      onInput={(event) =>
+                        setMemberDrafts((prev) => ({
+                          ...prev,
+                          [member.id]: {
+                            role: draft?.role || member.role,
+                            relationLabel: event.detail.value
+                          }
+                        }))
+                      }
+                      placeholder='例如 爸爸、妈妈、二舅'
+                    />
+                  </View>
 
                   {activeFamily?.role === 'owner' ? (
-                    <View>
+                    <View className='member-role-item'>
                       <Text className='form-label'>成员角色</Text>
-                      <View className='pill-row'>
+                      <View className='pill-row member-role-row'>
                         {roleOptions.map((role) => (
                           <View
                             key={role.value}

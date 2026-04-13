@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Button, Text, View } from '@tarojs/components'
 
@@ -19,6 +19,47 @@ import './index.scss'
 type EventFilterType = 'all' | EventType
 
 type FeedingTypeValue = 'formula_bottle' | 'breast_bottle' | 'breast_direct'
+
+interface FloatingButtonMetrics {
+  windowWidth: number
+  windowHeight: number
+  safeBottom: number
+  fabSize: number
+  margin: number
+  minBottomGap: number
+}
+
+function resolveFloatingButtonMetrics(): FloatingButtonMetrics {
+  try {
+    const systemInfo = Taro.getSystemInfoSync()
+    const windowWidth = systemInfo.windowWidth || 375
+    const windowHeight = systemInfo.windowHeight || 667
+    const pxPerRpx = windowWidth / 750
+    const safeBottom = systemInfo.safeArea ? Math.max(0, windowHeight - systemInfo.safeArea.bottom) : 0
+
+    return {
+      windowWidth,
+      windowHeight,
+      safeBottom,
+      fabSize: 76 * pxPerRpx,
+      margin: 24 * pxPerRpx,
+      minBottomGap: 100 * pxPerRpx
+    }
+  } catch {
+    return {
+      windowWidth: 375,
+      windowHeight: 667,
+      safeBottom: 0,
+      fabSize: 38,
+      margin: 12,
+      minBottomGap: 50
+    }
+  }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
 
 function resolveFeedingType(payload: Record<string, unknown>): FeedingTypeValue {
   const rawType = String(payload.feeding_type || payload.mode || '')
@@ -98,10 +139,38 @@ function summarizeEvent(event: GrowthEvent): string {
 }
 
 export default function RecordsPage() {
+  const [floatingMetrics] = useState<FloatingButtonMetrics>(() => resolveFloatingButtonMetrics())
   const [events, setEvents] = useState<GrowthEvent[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [deletingId, setDeletingId] = useState('')
   const [filterType, setFilterType] = useState<EventFilterType>('all')
+  const [isDraggingFab, setIsDraggingFab] = useState(false)
+  const [fabPos, setFabPos] = useState(() => {
+    const initialX = floatingMetrics.windowWidth - floatingMetrics.fabSize - floatingMetrics.margin
+    const initialY =
+      floatingMetrics.windowHeight -
+      floatingMetrics.fabSize -
+      floatingMetrics.safeBottom -
+      floatingMetrics.margin -
+      40
+    return {
+      x: clamp(initialX, 0, Math.max(0, floatingMetrics.windowWidth - floatingMetrics.fabSize)),
+      y: clamp(
+        initialY,
+        0,
+        Math.max(0, floatingMetrics.windowHeight - floatingMetrics.fabSize - floatingMetrics.safeBottom)
+      )
+    }
+  })
+  const fabDragRef = useRef({
+    dragging: false,
+    startX: 0,
+    startY: 0,
+    originX: 0,
+    originY: 0,
+    moved: false,
+    blockClickUntil: 0
+  })
 
   const hasContext = Boolean(
     getSession() && getActiveFamilyId(getSession() || undefined) && getActiveBabyId()
@@ -165,6 +234,66 @@ export default function RecordsPage() {
 
   function goToCreatePage(): void {
     void Taro.navigateTo({ url: '/pages/quick-record/index' })
+  }
+
+  function handleFabTouchStart(event: any): void {
+    const point = event.touches?.[0] || event.changedTouches?.[0]
+    if (!point) {
+      return
+    }
+
+    fabDragRef.current.dragging = true
+    fabDragRef.current.startX = Number(point.clientX ?? point.pageX ?? 0)
+    fabDragRef.current.startY = Number(point.clientY ?? point.pageY ?? 0)
+    fabDragRef.current.originX = fabPos.x
+    fabDragRef.current.originY = fabPos.y
+    fabDragRef.current.moved = false
+    setIsDraggingFab(true)
+  }
+
+  function handleFabTouchMove(event: any): void {
+    if (!fabDragRef.current.dragging) {
+      return
+    }
+    const point = event.touches?.[0] || event.changedTouches?.[0]
+    if (!point) {
+      return
+    }
+
+    const clientX = Number(point.clientX ?? point.pageX ?? 0)
+    const clientY = Number(point.clientY ?? point.pageY ?? 0)
+    const deltaX = clientX - fabDragRef.current.startX
+    const deltaY = clientY - fabDragRef.current.startY
+
+    if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+      fabDragRef.current.moved = true
+    }
+
+    const maxX = Math.max(0, floatingMetrics.windowWidth - floatingMetrics.fabSize)
+    const maxY = Math.max(
+      0,
+      floatingMetrics.windowHeight - floatingMetrics.fabSize - floatingMetrics.safeBottom - floatingMetrics.minBottomGap
+    )
+
+    setFabPos({
+      x: clamp(fabDragRef.current.originX + deltaX, 0, maxX),
+      y: clamp(fabDragRef.current.originY + deltaY, 0, maxY)
+    })
+  }
+
+  function handleFabTouchEnd(): void {
+    if (fabDragRef.current.moved) {
+      fabDragRef.current.blockClickUntil = Date.now() + 220
+    }
+    fabDragRef.current.dragging = false
+    setIsDraggingFab(false)
+  }
+
+  function handleFabClick(): void {
+    if (Date.now() < fabDragRef.current.blockClickUntil) {
+      return
+    }
+    goToCreatePage()
   }
 
   if (!hasContext) {
@@ -259,7 +388,19 @@ export default function RecordsPage() {
         })}
       </View>
 
-      <View className='floating-add-btn' onClick={goToCreatePage}>
+      <View
+        className={`floating-add-btn ${isDraggingFab ? 'dragging' : ''}`}
+        style={{
+          left: `${fabPos.x}px`,
+          top: `${fabPos.y}px`
+        }}
+        catchMove
+        onClick={handleFabClick}
+        onTouchStart={handleFabTouchStart}
+        onTouchMove={handleFabTouchMove}
+        onTouchEnd={handleFabTouchEnd}
+        onTouchCancel={handleFabTouchEnd}
+      >
         <View className='add-icon' />
       </View>
     </View>

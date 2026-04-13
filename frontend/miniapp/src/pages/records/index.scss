@@ -3,9 +3,6 @@
 
   .floating-add-btn {
     position: fixed;
-    right: 24rpx;
-    bottom: 160rpx;
-    bottom: calc(env(safe-area-inset-bottom) + 140rpx);
     z-index: 20;
     width: 76rpx;
     height: 76rpx;
@@ -16,6 +13,10 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 12rpx 28rpx rgba(14, 47, 88, 0.16);
+  }
+
+  .floating-add-btn.dragging {
+    box-shadow: 0 14rpx 32rpx rgba(14, 47, 88, 0.22);
   }
 
   .add-icon {

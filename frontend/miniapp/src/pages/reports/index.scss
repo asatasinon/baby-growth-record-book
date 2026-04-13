@@ -1,0 +1,82 @@
+.reports-page {
+  .create-card,
+  .list-card {
+    padding: 22rpx;
+  }
+
+  .report-type-row {
+    margin-bottom: 16rpx;
+  }
+
+  .time-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12rpx;
+  }
+
+  .picker-like {
+    color: #1f2433;
+  }
+
+  .tasks-list {
+    margin-top: 16rpx;
+    display: flex;
+    flex-direction: column;
+    gap: 14rpx;
+  }
+
+  .task-card {
+    padding: 20rpx;
+    border-radius: 18rpx;
+    border: 1rpx solid #dce8fb;
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .task-title {
+    display: block;
+    margin-bottom: 8rpx;
+    font-size: 28rpx;
+    font-weight: 700;
+  }
+
+  .task-line {
+    display: block;
+    margin-bottom: 6rpx;
+    color: #48556f;
+    font-size: 24rpx;
+  }
+
+  .status-tag {
+    display: inline-block;
+    padding: 4rpx 12rpx;
+    border-radius: 999rpx;
+    color: #fff;
+    font-size: 22rpx;
+  }
+
+  .status-pending {
+    background: #f59e0b;
+  }
+
+  .status-running {
+    background: #0284c7;
+  }
+
+  .status-succeeded {
+    background: #16a34a;
+  }
+
+  .status-failed {
+    background: #ef4444;
+  }
+
+  .status-expired {
+    background: #64748b;
+  }
+
+  .task-actions {
+    margin-top: 10rpx;
+    display: flex;
+    justify-content: flex-end;
+  }
+}

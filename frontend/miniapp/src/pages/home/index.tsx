@@ -320,6 +320,15 @@ export default function HomePage() {
         ) : (
           <Text className='muted'>当前没有提醒，继续保持。</Text>
         )}
+
+        <View className='quick-nav-row'>
+          <Button plain size='mini' onClick={() => Taro.navigateTo({ url: '/pages/alerts/index' })}>
+            查看全部提醒
+          </Button>
+          <Button plain size='mini' onClick={() => Taro.navigateTo({ url: '/pages/reports/index' })}>
+            前往报告中心
+          </Button>
+        </View>
       </View>
     </View>
   )

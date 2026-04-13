@@ -66,6 +66,14 @@ export interface DailyAlert {
   triggered_at: number
 }
 
+export interface AlertEvent extends DailyAlert {
+  family_id: string
+  baby_id: string
+  content: string
+  acknowledged_at: number | null
+  resolved_at: number | null
+}
+
 export interface DailySummary {
   summary_date: number
   feeding_total_ml: number
@@ -100,4 +108,27 @@ export interface AiAnswer {
   window_start: number
   window_end: number
   disclaimer: string
+}
+
+export type ExportReportType = 'daily' | 'weekly' | 'monthly' | 'custom'
+
+export type ExportTaskStatus = 'pending' | 'running' | 'succeeded' | 'failed' | 'expired'
+
+export interface ExportTask {
+  id: string
+  family_id: string
+  baby_id: string
+  report_type: ExportReportType
+  status: ExportTaskStatus
+  date_from: number
+  date_to: number
+  download_url: string | null
+  expires_at: number | null
+}
+
+export interface ExportTaskCreateResult {
+  id: string
+  status: ExportTaskStatus
+  download_url: string | null
+  expires_at: number | null
 }

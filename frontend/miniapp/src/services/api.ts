@@ -1,10 +1,14 @@
 import { request } from '@/services/http'
 import type {
+  AlertEvent,
   AiAnswer,
   AuthSession,
   BabyInfo,
   DailySummary,
   EventType,
+  ExportReportType,
+  ExportTask,
+  ExportTaskCreateResult,
   GrowthEvent,
   TrendResult
 } from '@/types/domain'
@@ -168,6 +172,63 @@ export async function queryAi(params: AiQueryParams): Promise<AiAnswer> {
       family_id: params.familyId,
       baby_id: params.babyId,
       question: params.question
+    }
+  })
+}
+
+interface ListAlertsParams extends SessionContext {
+  babyId?: string
+}
+
+export async function listAlerts(params: ListAlertsParams): Promise<AlertEvent[]> {
+  return request<AlertEvent[]>({
+    path: '/alerts',
+    token: params.session.access_token,
+    query: {
+      family_id: params.familyId,
+      baby_id: params.babyId
+    }
+  })
+}
+
+export async function acknowledgeAlert(
+  session: AuthSession,
+  alertId: string
+): Promise<{ id: string; status: 'open' | 'acknowledged' | 'resolved'; acknowledged_at: number | null }> {
+  return request<{ id: string; status: 'open' | 'acknowledged' | 'resolved'; acknowledged_at: number | null }>({
+    path: `/alerts/${alertId}/ack`,
+    method: 'PATCH',
+    token: session.access_token
+  })
+}
+
+interface CreateExportTaskParams extends SessionBabyContext {
+  reportType: ExportReportType
+  dateFrom: number
+  dateTo: number
+}
+
+export async function createExportTask(params: CreateExportTaskParams): Promise<ExportTaskCreateResult> {
+  return request<ExportTaskCreateResult>({
+    path: '/reports/export',
+    method: 'POST',
+    token: params.session.access_token,
+    data: {
+      family_id: params.familyId,
+      baby_id: params.babyId,
+      report_type: params.reportType,
+      date_from: params.dateFrom,
+      date_to: params.dateTo
+    }
+  })
+}
+
+export async function listExportTasks(context: SessionContext): Promise<ExportTask[]> {
+  return request<ExportTask[]>({
+    path: '/reports/exports',
+    token: context.session.access_token,
+    query: {
+      family_id: context.familyId
     }
   })
 }

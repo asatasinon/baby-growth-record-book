@@ -1,0 +1,93 @@
+.alerts-page {
+  .summary-card {
+    padding: 20rpx 24rpx;
+    margin-bottom: 16rpx;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12rpx;
+  }
+
+  .summary-item {
+    padding: 14rpx;
+    border-radius: 16rpx;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1rpx solid #dce8fb;
+  }
+
+  .summary-label {
+    display: block;
+    color: var(--text-sub);
+    font-size: 22rpx;
+    margin-bottom: 6rpx;
+  }
+
+  .summary-value {
+    font-size: 30rpx;
+    font-weight: 700;
+    color: #0f4a9b;
+  }
+
+  .alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14rpx;
+  }
+
+  .alert-card {
+    padding: 22rpx;
+  }
+
+  .alert-title {
+    display: block;
+    margin: 10rpx 0;
+    font-size: 30rpx;
+    font-weight: 700;
+  }
+
+  .alert-content {
+    display: block;
+    margin-bottom: 12rpx;
+    color: #314158;
+    font-size: 25rpx;
+    line-height: 1.5;
+  }
+
+  .severity-tag {
+    display: inline-block;
+    margin-right: 12rpx;
+    padding: 4rpx 12rpx;
+    border-radius: 999rpx;
+    font-size: 22rpx;
+    color: #fff;
+  }
+
+  .severity-info {
+    background: #0284c7;
+  }
+
+  .severity-warning {
+    background: #f59e0b;
+  }
+
+  .severity-high {
+    background: #ef4444;
+  }
+
+  .status-tag {
+    display: inline-block;
+    padding: 4rpx 12rpx;
+    border-radius: 999rpx;
+    font-size: 22rpx;
+    color: #274267;
+    background: #e3edf9;
+  }
+
+  .action-row {
+    margin-top: 14rpx;
+    display: flex;
+    justify-content: flex-end;
+  }
+}

@@ -45,6 +45,12 @@
     padding: 20rpx;
   }
 
+  .quick-nav-row {
+    margin-top: 16rpx;
+    display: flex;
+    gap: 12rpx;
+  }
+
   .alert-item {
     padding: 12rpx 0;
     border-bottom: 1rpx dashed #d9e5f7;

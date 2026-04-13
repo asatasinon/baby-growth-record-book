@@ -626,6 +626,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EventListResponse'
+  /admin/alert-rules:
+    get:
+      tags: [admin]
+      summary: List alert rules in admin console
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+  /admin/ai-conversations:
+    get:
+      tags: [admin]
+      summary: List AI conversations in admin console
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
+  /admin/export-tasks:
+    get:
+      tags: [admin]
+      summary: List export tasks in admin console
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
   /health/live:
     get:
       tags: [health]

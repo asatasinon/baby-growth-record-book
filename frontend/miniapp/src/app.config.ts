@@ -4,7 +4,9 @@ export default defineAppConfig({
     'pages/records/index',
     'pages/trends/index',
     'pages/ai/index',
-    'pages/profile/index'
+    'pages/profile/index',
+    'pages/alerts/index',
+    'pages/reports/index'
   ],
   window: {
     backgroundTextStyle: 'light',

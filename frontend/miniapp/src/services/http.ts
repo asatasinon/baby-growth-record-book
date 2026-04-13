@@ -12,7 +12,21 @@ interface RequestOptions {
   query?: Record<string, string | number | undefined | null>
 }
 
-const API_BASE_URL = process.env.TARO_APP_API_BASE_URL || 'http://localhost:8080/api/v1'
+const DEFAULT_API_BASE_URL = 'http://localhost:8080/api/v1'
+
+function resolveApiBaseUrl(): string {
+  const rawValue =
+    typeof process !== 'undefined' && process.env ? process.env.TARO_APP_API_BASE_URL : undefined
+  const normalized = rawValue?.trim()
+
+  if (!normalized || normalized === 'undefined' || normalized === 'null') {
+    return DEFAULT_API_BASE_URL
+  }
+
+  return normalized.replace(/\/+$/, '')
+}
+
+const API_BASE_URL = resolveApiBaseUrl()
 
 function buildUrl(path: string, query?: RequestOptions['query']): string {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`

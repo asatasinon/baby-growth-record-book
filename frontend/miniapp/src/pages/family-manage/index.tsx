@@ -103,6 +103,8 @@ export default function FamilyManagePage() {
   const [isInviteLoading, setIsInviteLoading] = useState(false)
   const [isMemberLoading, setIsMemberLoading] = useState(false)
   const [savingMemberId, setSavingMemberId] = useState('')
+  const [deletingMemberId, setDeletingMemberId] = useState('')
+  const [editingMemberId, setEditingMemberId] = useState('')
 
   const activeFamily = useMemo(
     () => session?.families.find((item) => item.id === activeFamilyId) || null,
@@ -126,6 +128,16 @@ export default function FamilyManagePage() {
       )
     )
   }, [members])
+
+  useEffect(() => {
+    if (!editingMemberId) {
+      return
+    }
+    const stillExists = members.some((member) => member.id === editingMemberId)
+    if (!stillExists) {
+      setEditingMemberId('')
+    }
+  }, [members, editingMemberId])
 
   useDidShow(() => {
     const current = getSession()
@@ -279,11 +291,63 @@ export default function FamilyManagePage() {
         relationLabel: draft.relationLabel.trim() || undefined
       })
       await loadMembers(session, activeFamily.id)
+      setEditingMemberId('')
       Taro.showToast({ title: '成员信息已更新', icon: 'success' })
     } catch (error) {
       Taro.showToast({ title: (error as Error).message || '更新成员失败', icon: 'none' })
     } finally {
       setSavingMemberId('')
+    }
+  }
+
+  function canEditMember(member: FamilyMemberInviteResult): boolean {
+    if (!session || !activeFamily) {
+      return false
+    }
+    return activeFamily.role === 'owner' || member.user_id === session.user.id
+  }
+
+  function canDeleteMember(member: FamilyMemberInviteResult): boolean {
+    if (!session || !activeFamily) {
+      return false
+    }
+    if (activeFamily.role !== 'owner') {
+      return false
+    }
+    if (member.user_id === session.user.id) {
+      return false
+    }
+    return member.status !== 'removed'
+  }
+
+  async function handleRemoveMember(member: FamilyMemberInviteResult): Promise<void> {
+    if (!session || !activeFamily || !canDeleteMember(member)) {
+      return
+    }
+
+    const targetName = member.user_display_name || `成员 ${member.user_id}`
+    const confirmResult = await Taro.showModal({
+      title: '移除成员',
+      content: `确认将“${targetName}”移出当前家庭吗？`,
+      confirmText: '确认移除',
+      confirmColor: '#ef5350'
+    })
+    if (!confirmResult.confirm) {
+      return
+    }
+
+    setDeletingMemberId(member.id)
+    try {
+      await updateFamilyMember(session, activeFamily.id, member.id, { status: 'removed' })
+      if (editingMemberId === member.id) {
+        setEditingMemberId('')
+      }
+      await loadMembers(session, activeFamily.id)
+      Taro.showToast({ title: '成员已移除', icon: 'success' })
+    } catch (error) {
+      Taro.showToast({ title: (error as Error).message || '移除成员失败', icon: 'none' })
+    } finally {
+      setDeletingMemberId('')
     }
   }
 
@@ -571,63 +635,104 @@ export default function FamilyManagePage() {
           <View className='member-list'>
             {members.map((member) => {
               const draft = memberDrafts[member.id]
+              const isEditing = editingMemberId === member.id
+              const editable = canEditMember(member)
+              const deletable = canDeleteMember(member)
               return (
                 <View key={member.id} className='member-item'>
-                  <Text className='member-name'>{member.user_display_name || `成员 ${member.user_id}`}</Text>
-                  <Text className='member-meta'>
-                    状态：{statusLabelMap[member.status] || member.status} / 角色：
-                    {roleLabelMap[member.role] || member.role}
-                  </Text>
-                  <View className='form-item member-relation-item'>
-                    <Text className='form-label'>关系名称</Text>
-                    <Input
-                      className='input'
-                      value={draft?.relationLabel || ''}
-                      onInput={(event) =>
-                        setMemberDrafts((prev) => ({
-                          ...prev,
-                          [member.id]: {
-                            role: draft?.role || member.role,
-                            relationLabel: event.detail.value
-                          }
-                        }))
-                      }
-                      placeholder='例如 爸爸、妈妈、二舅'
-                    />
+                  <View className='member-head'>
+                    <View className='member-summary'>
+                      <Text className='member-name'>{member.user_display_name || `成员 ${member.user_id}`}</Text>
+                      <Text className='member-meta'>
+                        状态：{statusLabelMap[member.status] || member.status} / 角色：
+                        {roleLabelMap[member.role] || member.role}
+                      </Text>
+                      {member.relation_label ? (
+                        <Text className='member-relation'>关系名称：{member.relation_label}</Text>
+                      ) : (
+                        <Text className='member-relation muted'>关系名称：未设置</Text>
+                      )}
+                    </View>
+                    <View className='member-actions'>
+                      <Button
+                        className='member-action-btn'
+                        size='mini'
+                        disabled={!editable}
+                        onClick={() => setEditingMemberId((prev) => (prev === member.id ? '' : member.id))}
+                      >
+                        {isEditing ? '收起' : '编辑'}
+                      </Button>
+                      <Button
+                        className='member-action-btn danger'
+                        size='mini'
+                        disabled={!deletable}
+                        loading={deletingMemberId === member.id}
+                        onClick={() => void handleRemoveMember(member)}
+                      >
+                        删除
+                      </Button>
+                    </View>
                   </View>
 
-                  {activeFamily?.role === 'owner' ? (
-                    <View className='member-role-item'>
-                      <Text className='form-label'>成员角色</Text>
-                      <View className='pill-row member-role-row'>
-                        {roleOptions.map((role) => (
-                          <View
-                            key={role.value}
-                            className={`pill ${draft?.role === role.value ? 'active' : ''}`}
-                            onClick={() =>
-                              setMemberDrafts((prev) => ({
-                                ...prev,
-                                [member.id]: {
-                                  role: role.value,
-                                  relationLabel: draft?.relationLabel || ''
+                  {isEditing ? (
+                    <View className='member-editor'>
+                      <View className='form-item member-relation-item'>
+                        <Text className='form-label'>关系名称</Text>
+                        <Input
+                          className='input'
+                          value={draft?.relationLabel || ''}
+                          onInput={(event) =>
+                            setMemberDrafts((prev) => ({
+                              ...prev,
+                              [member.id]: {
+                                role: draft?.role || member.role,
+                                relationLabel: event.detail.value
+                              }
+                            }))
+                          }
+                          placeholder='例如 爸爸、妈妈、二舅'
+                        />
+                      </View>
+
+                      {activeFamily?.role === 'owner' ? (
+                        <View className='member-role-item'>
+                          <Text className='form-label'>成员角色</Text>
+                          <View className='pill-row member-role-row'>
+                            {roleOptions.map((role) => (
+                              <View
+                                key={role.value}
+                                className={`pill ${draft?.role === role.value ? 'active' : ''}`}
+                                onClick={() =>
+                                  setMemberDrafts((prev) => ({
+                                    ...prev,
+                                    [member.id]: {
+                                      role: role.value,
+                                      relationLabel: draft?.relationLabel || ''
+                                    }
+                                  }))
                                 }
-                              }))
-                            }
-                          >
-                            <Text>{role.label}</Text>
+                              >
+                                <Text>{role.label}</Text>
+                              </View>
+                            ))}
                           </View>
-                        ))}
+                        </View>
+                      ) : null}
+
+                      <View className='member-editor-actions'>
+                        <Button className='member-cancel-btn' onClick={() => setEditingMemberId('')}>
+                          取消
+                        </Button>
+                        <Button
+                          className='member-save-btn'
+                          loading={savingMemberId === member.id}
+                          onClick={() => void handleSaveMember(member)}
+                        >
+                          保存
+                        </Button>
                       </View>
                     </View>
                   ) : null}
-
-                  <Button
-                    className='member-save-btn'
-                    loading={savingMemberId === member.id}
-                    onClick={() => void handleSaveMember(member)}
-                  >
-                    保存成员设置
-                  </Button>
                 </View>
               )
             })}

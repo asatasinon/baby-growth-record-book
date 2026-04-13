@@ -17,6 +17,7 @@
     "dev:backend": "cd backend && uv run python main.py",
     "dev:worker": "cd worker && uv run python -m app.main",
     "build:h5": "pnpm --filter @baby-growth/miniapp build:h5",
+    "build:weapp": "pnpm --filter @baby-growth/miniapp build:weapp",
     "build:admin": "pnpm --filter @baby-growth/admin build",
     "check:backend": "cd backend && uv run ruff check --fix app",
     "check:worker": "cd worker && uv run ruff check --fix app",

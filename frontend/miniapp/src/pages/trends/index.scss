@@ -59,6 +59,49 @@
     border: 1rpx solid #d0e2f5;
   }
 
+  .chart-canvas-wrapper {
+    position: relative;
+  }
+
+  .point-tooltip {
+    position: absolute;
+    z-index: 2;
+    min-width: 164px;
+    max-width: 200px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(21, 54, 88, 0.92);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(9, 30, 52, 0.24);
+    pointer-events: none;
+  }
+
+  .point-tooltip-time {
+    display: block;
+    font-size: 11px;
+    opacity: 0.92;
+  }
+
+  .point-tooltip-value {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .point-marker {
+    position: absolute;
+    z-index: 2;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: #0f6bd8;
+    box-shadow: 0 0 0 3px rgba(15, 107, 216, 0.25);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
   .fallback-list {
     margin-top: 16rpx;
     display: flex;

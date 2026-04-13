@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Canvas, Text, View } from '@tarojs/components'
 
@@ -14,6 +14,33 @@ const RANGE_OPTIONS = [7, 15, 30, 60, 90] as const
 type RangeDays = (typeof RANGE_OPTIONS)[number]
 type TrendMap = Partial<Record<RangeDays, TrendResult | null>>
 type ReadyMap = Partial<Record<RangeDays, boolean>>
+type TooltipMap = Partial<Record<RangeDays, ActiveTooltip | null>>
+
+interface CanvasRect {
+  width: number
+  height: number
+  left: number
+  top: number
+}
+
+interface PointPosition {
+  x: number
+  y: number
+  raw: TrendPoint
+}
+
+interface DrawnChartMeta {
+  rect: CanvasRect
+  pointPositions: PointPosition[]
+}
+
+interface ActiveTooltip {
+  anchorX: number
+  anchorY: number
+  left: number
+  top: number
+  point: TrendPoint
+}
 
 const METRIC_OPTIONS = [
   { code: 'feeding_total_ml' as const, label: '喂养总量' },
@@ -42,6 +69,13 @@ function buildReadyMap(value: boolean): ReadyMap {
   }, {} as ReadyMap)
 }
 
+function buildTooltipMap(value: ActiveTooltip | null): TooltipMap {
+  return RANGE_OPTIONS.reduce((acc, range) => {
+    acc[range] = value
+    return acc
+  }, {} as TooltipMap)
+}
+
 function calcStats(points: TrendPoint[]): { average: number; latest: number } {
   if (points.length === 0) {
     return { average: 0, latest: 0 }
@@ -52,22 +86,76 @@ function calcStats(points: TrendPoint[]): { average: number; latest: number } {
   return { average, latest }
 }
 
-function getCanvasRect(range: RangeDays): Promise<{ width: number; height: number } | null> {
+function getCanvasRect(range: RangeDays): Promise<CanvasRect | null> {
   return new Promise((resolve) => {
     const query = Taro.createSelectorQuery()
     query.select(`#trend-canvas-${range}`).boundingClientRect()
     query.exec((result) => {
-      const rect = (result?.[0] || null) as { width?: number; height?: number } | null
+      const rect = (result?.[0] || null) as
+        | { width?: number; height?: number; left?: number; top?: number }
+        | null
       if (!rect || !rect.width || !rect.height) {
         resolve(null)
         return
       }
-      resolve({ width: rect.width, height: rect.height })
+      resolve({
+        width: rect.width,
+        height: rect.height,
+        left: rect.left ?? 0,
+        top: rect.top ?? 0
+      })
     })
   })
 }
 
-async function drawTrendCanvas(range: RangeDays, points: TrendPoint[]): Promise<void> {
+function formatAxisValue(value: number): string {
+  if (Math.abs(value) >= 100) {
+    return String(Math.round(value))
+  }
+  const fixed = value.toFixed(1)
+  return fixed.endsWith('.0') ? fixed.slice(0, -2) : fixed
+}
+
+function formatTooltipValue(value: number): string {
+  const fixed = value.toFixed(1)
+  return fixed.endsWith('.0') ? fixed.slice(0, -2) : fixed
+}
+
+function resolveTouchLocalX(
+  touchX: number,
+  canvasRect: CanvasRect
+): number {
+  const offsetX = touchX - canvasRect.left
+  if (offsetX >= -24 && offsetX <= canvasRect.width + 24) {
+    return offsetX
+  }
+  return touchX
+}
+
+function pickNearestPoint(pointPositions: PointPosition[], localX: number): PointPosition | null {
+  if (pointPositions.length === 0) {
+    return null
+  }
+
+  return pointPositions.reduce((best, current) => {
+    if (!best) {
+      return current
+    }
+    return Math.abs(current.x - localX) < Math.abs(best.x - localX) ? current : best
+  }, null as PointPosition | null)
+}
+
+function resolveTooltipPosition(point: PointPosition, canvasRect: CanvasRect): Pick<ActiveTooltip, 'left' | 'top'> {
+  const tooltipWidth = 168
+  const tooltipHeight = 62
+  const minEdge = 8
+  const maxLeft = Math.max(minEdge, canvasRect.width - tooltipWidth - minEdge)
+  const left = Math.min(maxLeft, Math.max(minEdge, point.x - tooltipWidth / 2))
+  const top = Math.max(minEdge, point.y - tooltipHeight - 14)
+  return { left, top }
+}
+
+async function drawTrendCanvas(range: RangeDays, points: TrendPoint[]): Promise<DrawnChartMeta> {
   const rect = await getCanvasRect(range)
   if (!rect) {
     throw new Error('canvas size missing')
@@ -75,7 +163,7 @@ async function drawTrendCanvas(range: RangeDays, points: TrendPoint[]): Promise<
 
   const width = rect.width
   const height = rect.height
-  const padding = { left: 40, right: 16, top: 20, bottom: 30 }
+  const padding = { left: 56, right: 16, top: 20, bottom: 30 }
   const plotWidth = Math.max(1, width - padding.left - padding.right)
   const plotHeight = Math.max(1, height - padding.top - padding.bottom)
 
@@ -108,6 +196,17 @@ async function drawTrendCanvas(range: RangeDays, points: TrendPoint[]): Promise<
     ctx.moveTo(padding.left, y)
     ctx.lineTo(width - padding.right, y)
     ctx.stroke()
+  }
+
+  ctx.setFontSize(10)
+  ctx.setFillStyle('#5e6b84')
+  ctx.setTextAlign('right')
+  ctx.setTextBaseline('middle')
+  for (let i = 0; i <= 4; i += 1) {
+    const ratio = 1 - i / 4
+    const value = minValue + (maxValue - minValue) * ratio
+    const y = padding.top + (plotHeight / 4) * i
+    ctx.fillText(formatAxisValue(value), padding.left - 8, y)
   }
 
   if (pointPositions.length > 0) {
@@ -166,6 +265,11 @@ async function drawTrendCanvas(range: RangeDays, points: TrendPoint[]): Promise<
   await new Promise<void>((resolve) => {
     ctx.draw(false, () => resolve())
   })
+
+  return {
+    rect,
+    pointPositions
+  }
 }
 
 export default function TrendsPage() {
@@ -174,10 +278,14 @@ export default function TrendsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [chartReadyMap, setChartReadyMap] = useState<ReadyMap>(() => buildReadyMap(false))
   const [chartAttemptedMap, setChartAttemptedMap] = useState<ReadyMap>(() => buildReadyMap(false))
+  const [tooltipMap, setTooltipMap] = useState<TooltipMap>(() => buildTooltipMap(null))
+  const chartMetaRef = useRef<Partial<Record<RangeDays, DrawnChartMeta>>>({})
 
   function resetChartState(): void {
+    chartMetaRef.current = {}
     setChartReadyMap(buildReadyMap(false))
     setChartAttemptedMap(buildReadyMap(false))
+    setTooltipMap(buildTooltipMap(null))
   }
 
   function markChartReady(range: RangeDays, ready: boolean): void {
@@ -186,6 +294,63 @@ export default function TrendsPage() {
 
   function markChartAttempted(range: RangeDays, attempted: boolean): void {
     setChartAttemptedMap((prev) => ({ ...prev, [range]: attempted }))
+  }
+
+  function hideTooltip(range: RangeDays): void {
+    setTooltipMap((prev) => ({ ...prev, [range]: null }))
+  }
+
+  function updateTooltipByTouch(range: RangeDays, event: unknown): void {
+    const chartMeta = chartMetaRef.current[range]
+    if (!chartMeta || chartMeta.pointPositions.length === 0) {
+      hideTooltip(range)
+      return
+    }
+
+    const typedEvent = event as {
+      detail?: { x?: number; clientX?: number; offsetX?: number }
+      changedTouches?: Array<{ x?: number; clientX?: number; pageX?: number }>
+      touches?: Array<{ x?: number; clientX?: number; pageX?: number }>
+      nativeEvent?: { offsetX?: number; x?: number; clientX?: number }
+    }
+
+    const detailTouchX =
+      typedEvent.detail?.x ?? typedEvent.detail?.clientX ?? typedEvent.detail?.offsetX
+    const touch =
+      typedEvent.changedTouches?.[0] ??
+      typedEvent.touches?.[0] ??
+      null
+    const touchX =
+      detailTouchX ??
+      touch?.x ??
+      touch?.clientX ??
+      touch?.pageX ??
+      typedEvent.nativeEvent?.offsetX ??
+      typedEvent.nativeEvent?.x ??
+      typedEvent.nativeEvent?.clientX
+
+    if (typeof touchX !== 'number') {
+      return
+    }
+
+    const localX = resolveTouchLocalX(touchX, chartMeta.rect)
+    const nearestPoint = pickNearestPoint(chartMeta.pointPositions, localX)
+    if (!nearestPoint) {
+      hideTooltip(range)
+      return
+    }
+
+    const tooltipPosition = resolveTooltipPosition(nearestPoint, chartMeta.rect)
+    setTooltipMap((prev) => ({
+      ...prev,
+      [range]: {
+        anchorX: nearestPoint.x,
+        anchorY: nearestPoint.y,
+        left: tooltipPosition.left,
+        top: tooltipPosition.top,
+        point: nearestPoint.raw
+      }
+    }))
   }
 
   async function loadTrends(nextMetric = metricCode): Promise<void> {
@@ -253,10 +418,11 @@ export default function TrendsPage() {
         }
 
         void drawTrendCanvas(range, points)
-          .then(() => {
+          .then((chartMeta) => {
             if (canceled) {
               return
             }
+            chartMetaRef.current[range] = chartMeta
             markChartReady(range, true)
             markChartAttempted(range, true)
           })
@@ -264,8 +430,10 @@ export default function TrendsPage() {
             if (canceled) {
               return
             }
+            delete chartMetaRef.current[range]
             markChartReady(range, false)
             markChartAttempted(range, true)
+            hideTooltip(range)
           })
       })
     }, 80)
@@ -313,6 +481,7 @@ export default function TrendsPage() {
           const points = trend?.points || []
           const unit = trend?.unit || ''
           const { average, latest } = calcStats(points)
+          const activeTooltip = tooltipMap[range]
 
           return (
             <View key={range} className='card chart-card'>
@@ -341,7 +510,35 @@ export default function TrendsPage() {
               {!isLoading && points.length > 0 ? (
                 <View>
                   {!chartAttemptedMap[range] || chartReadyMap[range] ? (
-                    <Canvas id={`trend-canvas-${range}`} canvasId={`trend-canvas-${range}`} className='trend-canvas' />
+                    <View className='chart-canvas-wrapper'>
+                      <Canvas
+                        id={`trend-canvas-${range}`}
+                        canvasId={`trend-canvas-${range}`}
+                        className='trend-canvas'
+                        onTouchStart={(event) => updateTooltipByTouch(range, event)}
+                        onTouchMove={(event) => updateTooltipByTouch(range, event)}
+                        onClick={(event) => updateTooltipByTouch(range, event)}
+                      />
+
+                      {activeTooltip ? (
+                        <View
+                          className='point-tooltip'
+                          style={{ left: `${activeTooltip.left}px`, top: `${activeTooltip.top}px` }}
+                        >
+                          <Text className='point-tooltip-time'>{formatDateTime(activeTooltip.point.bucket_date)}</Text>
+                          <Text className='point-tooltip-value'>
+                            {formatTooltipValue(activeTooltip.point.value)} {unit}
+                          </Text>
+                        </View>
+                      ) : null}
+
+                      {activeTooltip ? (
+                        <View
+                          className='point-marker'
+                          style={{ left: `${activeTooltip.anchorX}px`, top: `${activeTooltip.anchorY}px` }}
+                        />
+                      ) : null}
+                    </View>
                   ) : null}
                   {chartAttemptedMap[range] && !chartReadyMap[range] ? (
                     <View className='fallback-list'>

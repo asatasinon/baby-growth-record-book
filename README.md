@@ -39,7 +39,9 @@ pnpm lint           # backend/worker lint + frontend build 校验
 ```
 
 > `pnpm db:init` 会清空数据库 `public` schema，仅用于本地开发与联调环境。
-> `pnpm db:upgrade` 使用 Alembic 管理增量迁移；脚本会在本机通过 `localhost:5432` 连接数据库。
+> `db:*` 脚本不会使用 `docker compose` 操作数据库，请先确保目标数据库可连通（本地/云上/容器/虚拟机均可）。
+> `db:*` 默认读取 `backend/.env` 中的 `DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD`。
+> `pnpm db:upgrade` 使用 Alembic 管理增量迁移到最新版本（head）。
 
 ## 后端（uv）
 

@@ -28,11 +28,16 @@ pnpm dev:admin     # 管理后台
 
 ```bash
 pnpm setup:python   # 安装 backend + worker 的 uv 依赖（含 dev）
+pnpm db:init        # 重置并初始化 PostgreSQL schema（开发环境）
+pnpm db:seed        # 导入本地联调用测试数据（docs/specs/S03-test-seed.sql）
+pnpm db:reset       # 等价于 db:init + db:seed
 pnpm dev:backend    # 启动后端 API（统一 main 入口）
 pnpm dev:worker     # 启动 worker
 pnpm check          # ruff check --fix（backend + worker）
 pnpm lint           # backend/worker lint + frontend build 校验
 ```
+
+> `pnpm db:init` 会清空数据库 `public` schema，仅用于本地开发与联调环境。
 
 ## 后端（uv）
 

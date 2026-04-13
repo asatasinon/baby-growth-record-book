@@ -25,10 +25,10 @@
 - 不要因为要写任务计划，就把规则写回 `docs/specs/` 或其他 `docs/` 目录；任务类规则应以 `task-doc-management` 为准
 
 ## 文档治理来源说明
-与文档治理相关的规则集中维护在 `.agents/skills/` 中对应的 skill/reference 内，而不是在 `docs/` 下重复维护一份副本。
+与文档治理相关的规则集中维护在 `.claude/skills/` 中对应的 skill/reference 内，而不是在 `docs/` 下重复维护一份副本。
 
-- 非任务类文档治理请使用 `.agents/skills/document-governance/`
-- 任务文档规则请使用 `.agents/skills/task-doc-management/`
+- 非任务类文档治理请使用 `.claude/skills/document-governance/`
+- 任务文档规则请使用 `.claude/skills/task-doc-management/`
 - 不要在 `docs/` 下重复创建治理规则副本
 - 保持 `docs/` 只聚焦于项目文档和机器可读交付物
 
@@ -55,7 +55,7 @@
 - 文件名：仅使用 ASCII，采用连字符写法，并带类别前缀（`P/A/D/Q/S/T`）
 - 依赖管理：前端统一 `pnpm`，Python 统一 `uv`，避免混用 `npm/yarn/pip/poetry/pipenv`
 
-涉及治理规则的修改时，应更新 `.agents/skills/document-governance/` 或 `.agents/skills/task-doc-management/`，不要在 `docs/` 中重复维护规则。
+涉及治理规则的修改时，应更新 `.agents/skills/document-governance/` 或 `.claude/skills/task-doc-management/`，不要在 `docs/` 中重复维护规则。
 
 ## 测试指南
 仓库目前还没有自动化测试套件。请将 [docs/quality/Q01-testing-and-acceptance.md](/Users/raven/code/baby-growth-record-book/docs/quality/Q01-testing-and-acceptance.md) 视为当前验证基线。

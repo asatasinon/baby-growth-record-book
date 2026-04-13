@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Baby Growth Record API
-  version: 2.2.0
+  version: 2.3.0
   description: API specification for the baby growth record SaaS platform. IDs are decimal strings at API boundary and stored as bigint in database; time fields use UTC millisecond timestamps.
 servers:
   - url: /api/v1
@@ -52,6 +52,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Revoke current access/refresh token
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
   /families:
     get:
       tags: [families]
@@ -593,6 +627,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AiQueryResponse'
+  /ai/summary:
+    post:
+      tags: [ai]
+      summary: Generate AI summary (daily/weekly/monthly)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiSummaryRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonResponse'
   /admin/families:
     get:
       tags: [admin]
@@ -761,6 +812,19 @@ components:
           type: string
           minLength: 8
           maxLength: 128
+    RefreshTokenRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+    LogoutRequest:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
     User:
       type: object
       properties:
@@ -826,6 +890,18 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/WechatLoginData'
+    RefreshTokenResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                refresh_token:
+                  type: string
     FamilyResponse:
       allOf:
         - $ref: '#/components/schemas/CommonResponse'
@@ -1045,6 +1121,22 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/DailySummary'
+    AiSummaryRequest:
+      type: object
+      required: [family_id, baby_id, summary_type]
+      properties:
+        family_id:
+          type: string
+          pattern: '^[0-9]+$'
+        baby_id:
+          type: string
+          pattern: '^[0-9]+$'
+        summary_type:
+          type: string
+          enum: [daily, weekly, monthly]
+        summary_date:
+          type: integer
+          format: int64
     TrendPoint:
       type: object
       properties:

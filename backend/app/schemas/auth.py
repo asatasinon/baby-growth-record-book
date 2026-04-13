@@ -15,3 +15,12 @@ class WechatLoginRequest(BaseModel):
 class PasswordLoginRequest(BaseModel):
     phone: PhoneStr
     password: str = Field(min_length=8, max_length=128)
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str = Field(min_length=16, max_length=4096)
+
+
+class LogoutRequest(BaseModel):
+    access_token: str | None = Field(default=None, min_length=16, max_length=4096)
+    refresh_token: str | None = Field(default=None, min_length=16, max_length=4096)

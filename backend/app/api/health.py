@@ -19,10 +19,10 @@ async def ready() -> JSONResponse:
     db_ok, db_error = await check_database_ready()
 
     storage_ready = bool(
-        settings.object_storage_endpoint
-        and settings.object_storage_bucket
-        and settings.object_storage_access_key
-        and settings.object_storage_secret_key
+        settings.oss_endpoint
+        and settings.oss_bucket
+        and settings.oss_access_key
+        and settings.oss_secret_key
     )
 
     all_ready = db_ok and storage_ready

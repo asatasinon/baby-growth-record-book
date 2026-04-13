@@ -2,7 +2,7 @@
 
 > 文档编号：T00
 > 状态：已生效
-> 版本号：v0.1.0
+> 版本号：v0.2.0
 > 最后更新时间：2026-04-13
 > 审核人：待定
 > 生效日期：2026-04-13
@@ -13,6 +13,7 @@
 | 版本号 | 日期 | 变更人 | 变更说明 |
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-13 | Codex | 初始化任务文档体系，基于现有实现与架构文档差距分析生成首批执行任务。 |
+| v0.2.0 | 2026-04-13 | Codex | 完成后端执行批次：T01/T02/T03/T06，更新任务状态与阻塞关系。 |
 
 ## 文档目的
 - 作为 `docs/task` 任务文档体系的索引与总看板。
@@ -30,12 +31,12 @@
 
 | 文档编号 | 文档名称 | 执行状态 | owner | 优先级 | ETA | 阻塞 |
 | --- | --- | --- | --- | --- | --- | --- |
-| [T01](./T01-backend-core.md) | 后端核心模块补全 | 未开始 | `backend-agent` | P1 | 待定 | 无 |
-| [T02](./T02-backend-ai.md) | 后端 AI 模块真实接入 | 未开始 | `backend-agent` | P2 | 待定 | T01 |
-| [T03](./T03-worker-jobs.md) | Worker 任务真实实现 | 未开始 | `backend-agent` | P1 | 待定 | T01、T06 |
-| [T04](./T04-frontend-miniapp.md) | 前端小程序缺失功能 | 未开始 | `frontend-agent` | P1 | 待定 | T01 |
-| [T05](./T05-frontend-admin.md) | 前端管理后台补全 | 未开始 | `frontend-agent` | P2 | 待定 | T01 |
-| [T06](./T06-infra-oss.md) | 基础设施与 OSS 集成 | 未开始 | `backend-agent` | P1 | 待定 | 无 |
+| [T01](./T01-backend-core.md) | 后端核心模块补全 | 已完成 | `backend-agent` | P1 | 2026-04-13 | 无 |
+| [T02](./T02-backend-ai.md) | 后端 AI 模块真实接入 | 已完成 | `backend-agent` | P2 | 2026-04-13 | 无 |
+| [T03](./T03-worker-jobs.md) | Worker 任务真实实现 | 已完成 | `backend-agent` | P1 | 2026-04-13 | 无 |
+| [T04](./T04-frontend-miniapp.md) | 前端小程序缺失功能 | 未开始 | `frontend-agent` | P1 | 待定 | 无 |
+| [T05](./T05-frontend-admin.md) | 前端管理后台补全 | 未开始 | `frontend-agent` | P2 | 待定 | 无 |
+| [T06](./T06-infra-oss.md) | 基础设施与 OSS 集成 | 已完成 | `backend-agent` | P1 | 2026-04-13 | 无 |
 
 ---
 
@@ -57,10 +58,8 @@
 
 | 被阻塞任务 | 阻塞原因 | 解除条件 |
 | --- | --- | --- |
-| T02 | 需要 T01 完成 summary/analytics 聚合层 | T01 summary weekly/monthly + analytics temperature_c 完成 |
-| T03 | 需要 T01 事件写入后 task_jobs 派发；需要 T06 OSS 客户端 | T01 task_jobs 派发 + T06 OSS 集成完成 |
-| T04 | 需要后端 PATCH 事件、家庭管理、宝宝编辑接口稳定 | T01 相关接口完成 |
-| T05 | 需要 AI 日志、规则模板后端接口稳定 | T01 + T02 相关接口完成 |
+| T04 | 无后端阻塞，待前端排期 | `frontend-agent` 启动执行 |
+| T05 | 无后端阻塞，待前端排期 | `frontend-agent` 启动执行 |
 
 ---
 

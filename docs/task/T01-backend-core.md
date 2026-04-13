@@ -2,7 +2,7 @@
 
 > 文档编号：T01
 > 状态：草案
-> 版本号：v0.1.0
+> 版本号：v0.2.0
 > 最后更新时间：2026-04-13
 > 审核人：待定
 > 生效日期：2026-04-13
@@ -13,6 +13,7 @@
 | 版本号 | 日期 | 变更人 | 变更说明 |
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-13 | Codex | 基于现有实现与文档差距分析，创建后端核心模块补全任务。 |
+| v0.2.0 | 2026-04-13 | Codex | 完成 T01 全量子任务：auth、event 派发、summary、analytics。 |
 
 ## 文档目的
 - 补全 auth、event、summary、analytics 四个模块中已有路由骨架但功能不完整或缺失的接口。
@@ -34,7 +35,7 @@
 - analytics 模块未处理 `temperature_c` 指标。
 
 ## 执行状态
-未开始
+已完成
 
 ## 执行 owner
 - owner 角色：后端负责人
@@ -45,8 +46,8 @@
 
 ## 执行排期
 - 优先级：P1
-- ETA：待定
-- 实际完成时间：待完成
+- ETA：2026-04-13
+- 实际完成时间：2026-04-13
 - 排期维护要求：排期变化时同步更新 `T00`。
 
 ## 预计输入
@@ -74,9 +75,9 @@
 
 | 依赖项 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| 微信 API（`code2session`） | 外部服务 | 待接入 | 需要微信 AppID + AppSecret 配置 |
-| T06 OSS 集成 | 内部任务 | 未开始 | task_jobs 派发后 export_report 需要 OSS |
-| `task_jobs` 表 DDL | 数据库 | 待确认 | 确认表已存在于 S02-db-schema.sql |
+| 微信 API（`code2session`） | 外部服务 | 已接入 | 通过 `WECHAT_APP_ID` + `WECHAT_APP_SECRET` 调用真实接口 |
+| T06 OSS 集成 | 内部任务 | 已完成 | task_jobs 派发后 export_report 可用 |
+| `task_jobs` 表 DDL | 数据库 | 已确认 | 已在 S02 和 Alembic 迁移中存在 |
 
 ## agent 接手说明
 1. 阅读 `D03` 中各接口规范，以及 `D02` 中事件写入流程图。
@@ -88,16 +89,16 @@
 
 | 子任务编号 | 子状态 | 子任务 | 执行 owner | 预计输入 | 预计输出 | Done Criteria |
 | --- | --- | --- | --- | --- | --- | --- |
-| T01-01 | 未开始 | POST /auth/refresh：Token 刷新接口 | `backend-agent` | D03 接口规范、现有 JWT 工具 | `auth/router.py` 新增 `/auth/refresh` 路由 | 有效 refresh_token 换回新 access_token；过期或无效 token 返回 401。 |
-| T01-02 | 未开始 | POST /auth/logout：注销接口 | `backend-agent` | D03 接口规范 | `auth/router.py` 新增 `/auth/logout` 路由 | 调用后当前 token 失效（或加入黑名单/返回成功即可，视实现策略）。 |
-| T01-03 | 未开始 | 微信登录真实 API 对接 | `backend-agent` | 微信 code2session 文档、WECHAT_APP_ID/SECRET 配置 | `auth/router.py` wechat_login 改为调用真实微信 API 获取 openid/unionid | 使用真实微信 code 能正确获取 openid；前端传入无效 code 返回 INVALID_ARGUMENT。 |
-| T01-04 | 未开始 | 手机号加密存储 | `backend-agent` | D03 安全约束、现有 `phone_ciphertext` 字段 | `core/security.py` 或 `models/user.py` 中加入手机号加解密逻辑 | 数据库中 `phone_ciphertext` 存储的是加密值而非明文；查询时能解密匹配。 |
-| T01-05 | 未开始 | 事件写入后派发 task_jobs | `backend-agent` | D02 流程图、`task_jobs` 表结构 | `event/router.py` 的 POST /events 写入后写 `task_jobs(aggregate_daily)` | 新增事件后 `task_jobs` 表中出现对应 `aggregate_daily` 记录；重算受影响日期。 |
-| T01-06 | 未开始 | 确认并补全 GET /events/{event_id} | `backend-agent` | 现有 `event/router.py` | 确认路由存在且正确返回单条事件详情 | 已登录用户用有效 event_id 能获取详情；无权或不存在返回对应错误码。 |
-| T01-07 | 未开始 | 确认并补全 PATCH /events/{event_id} | `backend-agent` | 现有 `event/router.py`、D03 规范 | event 编辑接口可用；编辑时触发 task_jobs 重算旧日期和新日期 | 编辑事件后 payload/时间更新生效；操作日志记录 old_value/new_value；重算队列写入。 |
-| T01-08 | 未开始 | GET /summaries/weekly | `backend-agent` | D03 接口规范、现有 summary/router.py daily 实现 | `summary/router.py` 新增 weekly 路由 | 传入 `week_start` 参数能返回当周汇总数据（喂养/排泄/睡眠/测量）。 |
-| T01-09 | 未开始 | GET /summaries/monthly | `backend-agent` | D03 接口规范、现有 summary/router.py | `summary/router.py` 新增 monthly 路由 | 传入 `month`（月起始毫秒）能返回当月汇总数据。 |
-| T01-10 | 未开始 | analytics temperature_c 指标处理 | `backend-agent` | 现有 `analytics/router.py` 中 `_LAST_METRICS` 定义 | `_event_metric_value` 函数补全 `temperature_c` 分支 | GET /analytics/trends?metric_code=temperature_c 能返回体温趋势数据点。 |
+| T01-01 | 已完成 | POST /auth/refresh：Token 刷新接口 | `backend-agent` | D03 接口规范、现有 JWT 工具 | `auth/router.py` 新增 `/auth/refresh` 路由 | 有效 refresh_token 换回新 access_token；过期或无效 token 返回 401。 |
+| T01-02 | 已完成 | POST /auth/logout：注销接口 | `backend-agent` | D03 接口规范 | `auth/router.py` 新增 `/auth/logout` 路由 | 调用后当前 token 失效（或加入黑名单/返回成功即可，视实现策略）。 |
+| T01-03 | 已完成 | 微信登录真实 API 对接 | `backend-agent` | 微信 code2session 文档、WECHAT_APP_ID/SECRET 配置 | `auth/router.py` wechat_login 改为调用真实微信 API 获取 openid/unionid | 使用真实微信 code 能正确获取 openid；前端传入无效 code 返回 INVALID_ARGUMENT。 |
+| T01-04 | 已完成 | 手机号加密存储 | `backend-agent` | D03 安全约束、现有 `phone_ciphertext` 字段 | `core/security.py` 或 `models/user.py` 中加入手机号加解密逻辑 | 数据库中 `phone_ciphertext` 存储的是加密值而非明文；查询时能解密匹配。 |
+| T01-05 | 已完成 | 事件写入后派发 task_jobs | `backend-agent` | D02 流程图、`task_jobs` 表结构 | `event/router.py` 的 POST /events 写入后写 `task_jobs(aggregate_daily)` | 新增事件后 `task_jobs` 表中出现对应 `aggregate_daily` 记录；重算受影响日期。 |
+| T01-06 | 已完成 | 确认并补全 GET /events/{event_id} | `backend-agent` | 现有 `event/router.py` | 确认路由存在且正确返回单条事件详情 | 已登录用户用有效 event_id 能获取详情；无权或不存在返回对应错误码。 |
+| T01-07 | 已完成 | 确认并补全 PATCH /events/{event_id} | `backend-agent` | 现有 `event/router.py`、D03 规范 | event 编辑接口可用；编辑时触发 task_jobs 重算旧日期和新日期 | 编辑事件后 payload/时间更新生效；操作日志记录 old_value/new_value；重算队列写入。 |
+| T01-08 | 已完成 | GET /summaries/weekly | `backend-agent` | D03 接口规范、现有 summary/router.py daily 实现 | `summary/router.py` 新增 weekly 路由 | 传入 `week_start` 参数能返回当周汇总数据（喂养/排泄/睡眠/测量）。 |
+| T01-09 | 已完成 | GET /summaries/monthly | `backend-agent` | D03 接口规范、现有 summary/router.py | `summary/router.py` 新增 monthly 路由 | 传入 `month`（月起始毫秒）能返回当月汇总数据。 |
+| T01-10 | 已完成 | analytics temperature_c 指标处理 | `backend-agent` | 现有 `analytics/router.py` 中 `_LAST_METRICS` 定义 | `_event_metric_value` 函数补全 `temperature_c` 分支 | GET /analytics/trends?metric_code=temperature_c 能返回体温趋势数据点。 |
 
 ## 完成标准
 - 所有上表子任务子状态均为 `已完成`。
@@ -110,3 +111,4 @@
 | 时间 | 交接人 | 接手人 | 说明 |
 | --- | --- | --- | --- |
 | 2026-04-13 | Codex | `backend-agent` | 任务文档初始化，等待执行。 |
+| 2026-04-13 | `backend-agent` | Codex | T01 全部子任务完成并回写状态。 |

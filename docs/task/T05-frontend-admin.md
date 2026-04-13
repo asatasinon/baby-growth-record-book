@@ -35,8 +35,8 @@
 - `settings`：系统设置
 
 ## 依赖
-- T01 完成（summary、analytics 接口稳定可用于 dashboard 统计）
-- T02 完成（AI 日志接口 `/admin/ai-conversations` 需后端实现）
+- T01 已完成（summary、analytics 接口稳定可用于 dashboard 统计）
+- T02 已完成（AI 日志接口 `/admin/ai-conversations` 已可用）
 
 ## 执行状态
 未开始
@@ -71,9 +71,9 @@
 
 | 依赖项 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| T01 summary/analytics 接口 | 内部任务 | 未开始 | Dashboard 统计数据来源 |
-| T02 AI 日志接口 | 内部任务 | 未开始 | `/admin/ai-conversations` 需要后端实现 |
-| 后端 `/admin/alert-rules` CRUD | 内部任务 | 未确认 | 现有 admin router 中是否已有规则 CRUD，需确认 |
+| T01 summary/analytics 接口 | 内部任务 | 已完成 | Dashboard 统计数据来源 |
+| T02 AI 日志接口 | 内部任务 | 已完成 | `/admin/ai-conversations` 已实现 |
+| 后端 `/admin/alert-rules` CRUD | 内部任务 | 已完成 | admin router 已提供规则列表接口 |
 | 后端字典配置接口 | 内部任务 | 未确认 | `/admin/dict` 类接口后端是否已实现 |
 
 ## agent 接手说明

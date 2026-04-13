@@ -2,7 +2,7 @@
 
 > 文档编号：T03
 > 状态：草案
-> 版本号：v0.1.0
+> 版本号：v0.2.0
 > 最后更新时间：2026-04-13
 > 审核人：待定
 > 生效日期：2026-04-13
@@ -13,6 +13,7 @@
 | 版本号 | 日期 | 变更人 | 变更说明 |
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-13 | Codex | 基于 Worker 存根实现与 D02/D06 设计文档，创建 Worker 任务补全任务。 |
+| v0.2.0 | 2026-04-13 | Codex | 完成四类 Worker Job 的真实实现并接入 task_jobs 轮询。 |
 
 ## 文档目的
 - 将 `worker/app/jobs/` 下四个只有 `print` 语句的存根 Job 替换为真实业务逻辑实现。
@@ -41,7 +42,7 @@
 - T06 完成（export_report 需要 OSS 客户端上传文件）
 
 ## 执行状态
-未开始
+已完成
 
 ## 执行 owner
 - owner 角色：后端负责人
@@ -52,8 +53,8 @@
 
 ## 执行排期
 - 优先级：P1
-- ETA：待定（建议在 T01 + T06 完成后启动）
-- 实际完成时间：待完成
+- ETA：2026-04-13（T01 + T06 完成后启动）
+- 实际完成时间：2026-04-13
 - 排期维护要求：排期变化时同步更新 `T00`。
 
 ## 预计输入
@@ -78,9 +79,9 @@
 
 | 依赖项 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| T01 task_jobs 派发 | 内部任务 | 未开始 | aggregate_daily 需要 task_jobs 表有数据才会触发 |
-| T06 OSS 客户端 | 内部任务 | 未开始 | export_report 需要 OSS 上传能力 |
-| T02 LLM 接入 | 内部任务 | 未开始 | ai_summary 与 T02 共用模型调用逻辑，建议抽取可复用函数 |
+| T01 task_jobs 派发 | 内部任务 | 已完成 | aggregate_daily 可通过 task_jobs 正常触发 |
+| T06 OSS 客户端 | 内部任务 | 已完成 | export_report 可上传并回写下载链接 |
+| T02 LLM 接入 | 内部任务 | 已完成 | ai_summary 已通过 LLM 工具调用并写入摘要 |
 
 ## agent 接手说明
 1. 阅读 D02 中日报生成流程图和 D06 规则类型列表。
@@ -93,10 +94,10 @@
 
 | 子任务编号 | 子状态 | 子任务 | 执行 owner | 预计输入 | 预计输出 | Done Criteria |
 | --- | --- | --- | --- | --- | --- | --- |
-| T03-01 | 未开始 | aggregate_daily：日汇总重算逻辑 | `backend-agent` | D02 日报生成流程、D05 表结构、T01 完成 | `aggregate_daily.py` 真实聚合实现 | 写入事件后触发任务，`daily_summaries` 和 `metric_snapshots` 数据正确更新；受影响的旧日期和新日期均重算。 |
-| T03-02 | 未开始 | export_report：报告文件生成与 OSS 上传 | `backend-agent` | D05、T06 OSS 客户端、`export_tasks` 表 | `export_report.py` 真实实现 | 任务执行后 `export_tasks.status=succeeded`，`download_url` 有效，文件可下载；失败时 `status=failed` 且记录 `error_message`。 |
-| T03-03 | 未开始 | scan_alerts：规则扫描与提醒生成 | `backend-agent` | D06 规则类型列表、`alert_rules` 表、`alert_events` 表 | `scan_alerts.py` 真实实现 | 配置了 `feeding_interval_too_long` 等规则时，满足阈值条件后在 `alert_events` 中正确写入提醒记录，不重复触发。 |
-| T03-04 | 未开始 | ai_summary：AI 日/周/月摘要生成 | `backend-agent` | T02 context builder 和模型工具函数 | `ai_summary.py` 真实实现 | 定时或按需触发后，摘要文本写入数据库对应记录；LLM 错误时任务标记失败而非崩溃。 |
+| T03-01 | 已完成 | aggregate_daily：日汇总重算逻辑 | `backend-agent` | D02 日报生成流程、D05 表结构、T01 完成 | `aggregate_daily.py` 真实聚合实现 | 写入事件后触发任务，`daily_summaries` 和 `metric_snapshots` 数据正确更新；受影响的旧日期和新日期均重算。 |
+| T03-02 | 已完成 | export_report：报告文件生成与 OSS 上传 | `backend-agent` | D05、T06 OSS 客户端、`export_tasks` 表 | `export_report.py` 真实实现 | 任务执行后 `export_tasks.status=succeeded`，`download_url` 有效，文件可下载；失败时 `status=failed` 且记录 `error_message`。 |
+| T03-03 | 已完成 | scan_alerts：规则扫描与提醒生成 | `backend-agent` | D06 规则类型列表、`alert_rules` 表、`alert_events` 表 | `scan_alerts.py` 真实实现 | 配置了 `feeding_interval_too_long` 等规则时，满足阈值条件后在 `alert_events` 中正确写入提醒记录，不重复触发。 |
+| T03-04 | 已完成 | ai_summary：AI 日/周/月摘要生成 | `backend-agent` | T02 context builder 和模型工具函数 | `ai_summary.py` 真实实现 | 定时或按需触发后，摘要文本写入数据库对应记录；LLM 错误时任务标记失败而非崩溃。 |
 
 ## 完成标准
 - 四个 job 均无 `print` 存根，均有真实业务逻辑。
@@ -111,3 +112,4 @@
 | 时间 | 交接人 | 接手人 | 说明 |
 | --- | --- | --- | --- |
 | 2026-04-13 | Codex | `backend-agent` | 任务文档初始化，等待 T01 + T06 完成后执行。 |
+| 2026-04-13 | `backend-agent` | Codex | T03 全部子任务完成并回写状态。 |

@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
   "pydantic-settings>=2.6.0",
-  "python-json-logger>=2.0.7"
+  "python-json-logger>=2.0.7",
+  "psycopg[binary]>=3.2.0",
+  "httpx>=0.28.1",
+  "boto3>=1.35.0"
 ]
 
 [project.optional-dependencies]

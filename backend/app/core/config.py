@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -21,13 +21,30 @@ class Settings(BaseSettings):
     # CORS：生产环境通过环境变量覆盖为具体域名列表，用逗号分隔
     cors_allow_origins: str = Field(default="*", alias="CORS_ALLOW_ORIGINS")
 
-    object_storage_endpoint: str | None = Field(default=None, alias="OBJECT_STORAGE_ENDPOINT")
-    object_storage_bucket: str | None = Field(default=None, alias="OBJECT_STORAGE_BUCKET")
-    object_storage_access_key: str | None = Field(default=None, alias="OBJECT_STORAGE_ACCESS_KEY")
-    object_storage_secret_key: str | None = Field(default=None, alias="OBJECT_STORAGE_SECRET_KEY")
+    # OSS 配置同时兼容历史 OBJECT_STORAGE_* 变量。
+    oss_endpoint: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("OSS_ENDPOINT", "OBJECT_STORAGE_ENDPOINT"),
+    )
+    oss_bucket: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("OSS_BUCKET", "OBJECT_STORAGE_BUCKET"),
+    )
+    oss_access_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("OSS_ACCESS_KEY", "OBJECT_STORAGE_ACCESS_KEY"),
+    )
+    oss_secret_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("OSS_SECRET_KEY", "OBJECT_STORAGE_SECRET_KEY"),
+    )
+
+    wechat_app_id: str | None = Field(default=None, alias="WECHAT_APP_ID")
+    wechat_app_secret: str | None = Field(default=None, alias="WECHAT_APP_SECRET")
 
     llm_base_url: str | None = Field(default=None, alias="LLM_BASE_URL")
     llm_api_key: str | None = Field(default=None, alias="LLM_API_KEY")
+    llm_model: str | None = Field(default="gpt-4o-mini", alias="LLM_MODEL")
 
     api_host: str = Field(default="0.0.0.0", alias="API_HOST")
     api_port: int = Field(default=8000, alias="API_PORT")

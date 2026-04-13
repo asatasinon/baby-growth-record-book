@@ -14,8 +14,10 @@ from app.core.permissions import (
 )
 from app.core.response import success
 from app.core.security import CurrentUser, get_current_user
-from app.core.time_utils import now_ms
+from app.core.time_utils import day_start_ms, now_ms
+from app.models.audit import OperationLog
 from app.models.event import GrowthEvent
+from app.models.task import TaskJob
 from app.schemas.id_types import IdStr, to_api_id, to_db_id
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -63,6 +65,58 @@ def _event_to_payload(event: GrowthEvent) -> dict[str, Any]:
         "payload": event.payload_snapshot,
         "status": event.status,
     }
+
+
+def _enqueue_aggregate_daily(
+    *,
+    db: AsyncSession,
+    family_id: int,
+    baby_id: int,
+    dates: set[int],
+) -> None:
+    run_after = now_ms()
+    normalized_dates = sorted(dates)
+    db.add(
+        TaskJob(
+            job_type="aggregate_daily",
+            payload={
+                "family_id": family_id,
+                "baby_id": baby_id,
+                "dates": normalized_dates,
+            },
+            status="pending",
+            retry_count=0,
+            max_retries=3,
+            run_after=run_after,
+            locked_at=None,
+            locked_by=None,
+            error_message=None,
+        )
+    )
+
+
+def _add_operation_log(
+    *,
+    db: AsyncSession,
+    event: GrowthEvent,
+    operator_user_id: int,
+    action: str,
+    old_value: dict[str, Any] | None,
+    new_value: dict[str, Any] | None,
+) -> None:
+    db.add(
+        OperationLog(
+            family_id=event.family_id,
+            operator_user_id=operator_user_id,
+            resource_type="growth_event",
+            resource_id=event.id,
+            action=action,
+            source=event.source,
+            old_value=old_value,
+            new_value=new_value,
+            created_at=now_ms(),
+        )
+    )
 
 
 @router.get("")
@@ -130,6 +184,20 @@ async def create_event(
     )
     db.add(event)
     await db.flush()
+    _enqueue_aggregate_daily(
+        db=db,
+        family_id=event.family_id,
+        baby_id=event.baby_id,
+        dates={day_start_ms(event.occurred_at)},
+    )
+    _add_operation_log(
+        db=db,
+        event=event,
+        operator_user_id=current_user.user_id,
+        action="create",
+        old_value=None,
+        new_value=_event_to_payload(event),
+    )
     await db.commit()
 
     return success(_event_to_payload(event))
@@ -161,6 +229,8 @@ async def update_event(
         raise AppError("NOT_FOUND", "event not found", status_code=404)
 
     await assert_family_write_access(db, family_id=event.family_id, user_id=current_user.user_id)
+    old_payload = _event_to_payload(event)
+    old_summary_date = day_start_ms(event.occurred_at)
 
     changes = payload.model_dump(exclude_none=True)
     if "payload" in changes:
@@ -170,6 +240,21 @@ async def update_event(
         setattr(event, key, value)
 
     event.updated_by = current_user.user_id
+    new_summary_date = day_start_ms(event.occurred_at)
+    _enqueue_aggregate_daily(
+        db=db,
+        family_id=event.family_id,
+        baby_id=event.baby_id,
+        dates={old_summary_date, new_summary_date},
+    )
+    _add_operation_log(
+        db=db,
+        event=event,
+        operator_user_id=current_user.user_id,
+        action="update",
+        old_value=old_payload,
+        new_value=_event_to_payload(event),
+    )
 
     await db.commit()
     return success(_event_to_payload(event))
@@ -186,10 +271,26 @@ async def delete_event(
         raise AppError("NOT_FOUND", "event not found", status_code=404)
 
     await assert_family_write_access(db, family_id=event.family_id, user_id=current_user.user_id)
+    old_payload = _event_to_payload(event)
+    summary_date = day_start_ms(event.occurred_at)
 
     event.status = "deleted"
     event.deleted_at = now_ms()
     event.updated_by = current_user.user_id
+    _enqueue_aggregate_daily(
+        db=db,
+        family_id=event.family_id,
+        baby_id=event.baby_id,
+        dates={summary_date},
+    )
+    _add_operation_log(
+        db=db,
+        event=event,
+        operator_user_id=current_user.user_id,
+        action="delete",
+        old_value=old_payload,
+        new_value={"id": old_payload["id"], "status": "deleted"},
+    )
 
     await db.commit()
     return success({"id": to_api_id(event.id), "status": event.status})

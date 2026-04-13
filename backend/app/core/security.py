@@ -20,6 +20,46 @@ _REFRESH_TOKEN_TTL_DAYS = 30
 _PASSWORD_ALGORITHM = "pbkdf2_sha256"
 _PASSWORD_ITERATIONS = 120_000
 _PASSWORD_SALT_BYTES = 16
+_PHONE_CIPHER_PREFIX = "enc:v1:"
+_revoked_jti: set[str] = set()
+
+
+def _phone_cipher_key() -> bytes:
+    return hashlib.sha256(f"{get_settings().app_secret}:phone".encode("utf-8")).digest()
+
+
+def _xor_stream(data: bytes, key: bytes) -> bytes:
+    result = bytearray()
+    counter = 0
+    seed = key
+    while len(result) < len(data):
+        block = hashlib.sha256(seed + counter.to_bytes(8, "big")).digest()
+        result.extend(block)
+        counter += 1
+    return bytes(a ^ b for a, b in zip(data, result[: len(data)], strict=True))
+
+
+def encrypt_phone(value: str) -> str:
+    if value.startswith(_PHONE_CIPHER_PREFIX):
+        return value
+    cipher_bytes = _xor_stream(value.encode("utf-8"), _phone_cipher_key())
+    encoded = base64.urlsafe_b64encode(cipher_bytes).decode("ascii")
+    return f"{_PHONE_CIPHER_PREFIX}{encoded}"
+
+
+def decrypt_phone(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if not value.startswith(_PHONE_CIPHER_PREFIX):
+        # 兼容历史明文存储数据。
+        return value
+    encoded = value.removeprefix(_PHONE_CIPHER_PREFIX)
+    try:
+        cipher_bytes = base64.urlsafe_b64decode(encoded.encode("ascii"))
+        plain = _xor_stream(cipher_bytes, _phone_cipher_key()).decode("utf-8")
+    except Exception:
+        return None
+    return plain
 
 
 def create_access_token(subject: dict[str, Any]) -> str:
@@ -29,6 +69,7 @@ def create_access_token(subject: dict[str, Any]) -> str:
         "iat": now,
         "exp": now + timedelta(minutes=_ACCESS_TOKEN_TTL_MINUTES),
         "type": "access",
+        "jti": secrets.token_hex(16),
     }
     return jwt.encode(payload, get_settings().jwt_secret, algorithm=_ALGORITHM)
 
@@ -40,6 +81,7 @@ def create_refresh_token(subject: dict[str, Any]) -> str:
         "iat": now,
         "exp": now + timedelta(days=_REFRESH_TOKEN_TTL_DAYS),
         "type": "refresh",
+        "jti": secrets.token_hex(16),
     }
     return jwt.encode(payload, get_settings().jwt_secret, algorithm=_ALGORITHM)
 
@@ -86,6 +128,17 @@ def decode_token(token: str) -> dict[str, Any]:
         raise AppError("UNAUTHORIZED", "invalid token", status_code=401) from exc
 
 
+def revoke_token(token_payload: dict[str, Any]) -> None:
+    jti = token_payload.get("jti")
+    if isinstance(jti, str) and jti:
+        _revoked_jti.add(jti)
+
+
+def is_token_revoked(token_payload: dict[str, Any]) -> bool:
+    jti = token_payload.get("jti")
+    return bool(isinstance(jti, str) and jti and jti in _revoked_jti)
+
+
 class CurrentUser:
     """已认证用户上下文。"""
 
@@ -107,6 +160,8 @@ async def get_current_user(
         raise AppError("UNAUTHORIZED", "missing authorization header", status_code=401)
 
     payload = decode_token(credentials.credentials)
+    if is_token_revoked(payload):
+        raise AppError("UNAUTHORIZED", "token revoked", status_code=401)
     if payload.get("type") != "access":
         raise AppError("UNAUTHORIZED", "invalid token type", status_code=401)
 

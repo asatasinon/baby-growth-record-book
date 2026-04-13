@@ -2,7 +2,7 @@
 
 > 文档编号：T06
 > 状态：草案
-> 版本号：v0.1.0
+> 版本号：v0.2.0
 > 最后更新时间：2026-04-13
 > 审核人：待定
 > 生效日期：2026-04-13
@@ -13,6 +13,7 @@
 | 版本号 | 日期 | 变更人 | 变更说明 |
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-13 | Codex | 基于架构文档与现有实现缺口，创建基础设施 OSS 集成任务。 |
+| v0.2.0 | 2026-04-13 | Codex | 完成迁移补齐、OSS 客户端和 MinIO 本地环境配置。 |
 
 ## 文档目的
 - 实现对象存储（OSS）客户端集成，供报告导出 Worker 使用；同时确认关键数据库迁移的完整性。
@@ -36,7 +37,7 @@ A01 架构图明确 API 和 Worker 均依赖对象存储（OSS），但当前代
 - `task_jobs` 表在迁移文件中是否存在需确认。
 
 ## 执行状态
-未开始
+已完成
 
 ## 执行 owner
 - owner 角色：后端/运维负责人
@@ -47,8 +48,8 @@ A01 架构图明确 API 和 Worker 均依赖对象存储（OSS），但当前代
 
 ## 执行排期
 - 优先级：P1
-- ETA：待定（可与 T01 并行）
-- 实际完成时间：待完成
+- ETA：2026-04-13（与 T01 并行完成）
+- 实际完成时间：2026-04-13
 - 排期维护要求：排期变化时同步更新 `T00`。
 
 ## 预计输入
@@ -75,8 +76,8 @@ A01 架构图明确 API 和 Worker 均依赖对象存储（OSS），但当前代
 
 | 依赖项 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| OSS 服务（S3 兼容） | 外部服务 | 待配置 | 可使用 MinIO（本地开发）或阿里云 OSS / AWS S3（生产），需提供 endpoint、bucket、访问凭证 |
-| `boto3` 或 `aiobotocore` | Python 依赖 | 待安装 | S3 兼容客户端；选择异步版本以配合 FastAPI 异步上下文 |
+| OSS 服务（S3 兼容） | 外部服务 | 已配置 | 本地 `docker-compose` 已接入 MinIO；生产可切换到阿里云 OSS / AWS S3 |
+| `boto3` 或 `aiobotocore` | Python 依赖 | 已安装 | 采用 `boto3` 作为 S3 兼容客户端 |
 
 ## agent 接手说明
 1. 先检查 `backend/app/migrations/versions/` 下是否包含 `task_jobs`、`daily_summaries`、`metric_snapshots`、`ai_conversations`、`ai_messages` 表的迁移文件；缺失则按 S02 DDL 补充迁移。
@@ -90,11 +91,11 @@ A01 架构图明确 API 和 Worker 均依赖对象存储（OSS），但当前代
 
 | 子任务编号 | 子状态 | 子任务 | 执行 owner | 预计输入 | 预计输出 | Done Criteria |
 | --- | --- | --- | --- | --- | --- | --- |
-| T06-01 | 未开始 | 数据库迁移完整性核查与补全 | `backend-agent` | `S02-db-schema.sql`、现有迁移文件 | 缺失表的迁移文件；更新后的 S02 | `alembic upgrade head` 无报错；`task_jobs`、`daily_summaries`、`metric_snapshots`、`ai_conversations`、`ai_messages` 表均存在。 |
-| T06-02 | 未开始 | OSS 配置项接入 | `backend-agent` | `core/config.py`、A01/A02 配置约定 | `config.py` 新增 OSS 配置字段 | OSS 配置项从环境变量读取；缺失时启动时输出明确错误提示。 |
-| T06-03 | 未开始 | OSS 客户端封装（backend） | `backend-agent` | `core/storage.py`（新建）、`boto3`/`aiobotocore` | `upload_object()` 和 `generate_presigned_url()` 函数 | 能将字节数据上传至 OSS bucket；能生成有时效的预签名下载 URL。 |
-| T06-04 | 未开始 | OSS 客户端封装（worker） | `backend-agent` | T06-03 完成、`worker/app/core/` | Worker 可复用的 OSS 工具函数 | Worker job 可调用 OSS 上传并获得下载 URL；无需重复实现客户端逻辑。 |
-| T06-05 | 未开始 | MinIO 本地开发环境配置 | `backend-agent` | `docker-compose.yml` | `docker-compose.yml` 新增 MinIO 服务 | `docker-compose up` 后 MinIO 可访问，本地环境 OSS 上传/下载可正常工作。 |
+| T06-01 | 已完成 | 数据库迁移完整性核查与补全 | `backend-agent` | `S02-db-schema.sql`、现有迁移文件 | 缺失表的迁移文件；更新后的 S02 | `alembic upgrade head` 无报错；`task_jobs`、`daily_summaries`、`metric_snapshots`、`ai_conversations`、`ai_messages` 表均存在。 |
+| T06-02 | 已完成 | OSS 配置项接入 | `backend-agent` | `core/config.py`、A01/A02 配置约定 | `config.py` 新增 OSS 配置字段 | OSS 配置项从环境变量读取；缺失时启动时输出明确错误提示。 |
+| T06-03 | 已完成 | OSS 客户端封装（backend） | `backend-agent` | `core/storage.py`（新建）、`boto3`/`aiobotocore` | `upload_object()` 和 `generate_presigned_url()` 函数 | 能将字节数据上传至 OSS bucket；能生成有时效的预签名下载 URL。 |
+| T06-04 | 已完成 | OSS 客户端封装（worker） | `backend-agent` | T06-03 完成、`worker/app/core/` | Worker 可复用的 OSS 工具函数 | Worker job 可调用 OSS 上传并获得下载 URL；无需重复实现客户端逻辑。 |
+| T06-05 | 已完成 | MinIO 本地开发环境配置 | `backend-agent` | `docker-compose.yml` | `docker-compose.yml` 新增 MinIO 服务 | `docker-compose up` 后 MinIO 可访问，本地环境 OSS 上传/下载可正常工作。 |
 
 ## 完成标准
 - 所有子任务子状态均为 `已完成`。
@@ -108,3 +109,4 @@ A01 架构图明确 API 和 Worker 均依赖对象存储（OSS），但当前代
 | 时间 | 交接人 | 接手人 | 说明 |
 | --- | --- | --- | --- |
 | 2026-04-13 | Codex | `backend-agent` | 任务文档初始化，可与 T01 并行执行。 |
+| 2026-04-13 | `backend-agent` | Codex | T06 全部子任务完成并回写状态。 |

@@ -2,7 +2,7 @@
 
 > 文档编号：T02
 > 状态：草案
-> 版本号：v0.1.0
+> 版本号：v0.2.0
 > 最后更新时间：2026-04-13
 > 审核人：待定
 > 生效日期：2026-04-13
@@ -13,6 +13,7 @@
 | 版本号 | 日期 | 变更人 | 变更说明 |
 | --- | --- | --- | --- |
 | v0.1.0 | 2026-04-13 | Codex | 基于 D06 AI 设计文档与当前存根实现，创建 AI 模块补全任务。 |
+| v0.2.0 | 2026-04-13 | Codex | 完成 LLM 接入、上下文拼装、对话日志和 `/ai/summary` 接口。 |
 
 ## 文档目的
 - 将 `backend/app/modules/ai/` 从基于事件计数的存根替换为真实 LLM 接入实现，满足 D06 规范。
@@ -34,7 +35,7 @@
 - 模型服务 API Key 配置（环境变量）
 
 ## 执行状态
-未开始
+已完成
 
 ## 执行 owner
 - owner 角色：后端/AI 负责人
@@ -45,8 +46,8 @@
 
 ## 执行排期
 - 优先级：P2
-- ETA：待定（建议在 T01 完成后启动）
-- 实际完成时间：待完成
+- ETA：2026-04-13（T01 完成后启动）
+- 实际完成时间：2026-04-13
 - 排期维护要求：排期变化时同步更新 `T00`。
 
 ## 预计输入
@@ -71,8 +72,8 @@
 
 | 依赖项 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| LLM 模型服务 | 外部服务 | 待接入 | 需要 API Key、Base URL、模型名配置；首选 OpenAI 兼容接口 |
-| T01 summary weekly/monthly | 内部任务 | 未开始 | AI 上下文拼装依赖聚合数据 |
+| LLM 模型服务 | 外部服务 | 已接入 | 使用 OpenAI 兼容 `chat/completions` 协议接入 |
+| T01 summary weekly/monthly | 内部任务 | 已完成 | AI 上下文拼装已可复用聚合数据 |
 
 ## agent 接手说明
 1. 阅读 D06 中 AI 流程设计（6 步流程）和 AI 能力边界约束。
@@ -86,12 +87,12 @@
 
 | 子任务编号 | 子状态 | 子任务 | 执行 owner | 预计输入 | 预计输出 | Done Criteria |
 | --- | --- | --- | --- | --- | --- | --- |
-| T02-01 | 未开始 | LLM 配置项接入 | `backend-agent` | `core/config.py`、D06、环境变量约定 | `config.py` 新增 `LLM_API_KEY`、`LLM_MODEL`、`LLM_BASE_URL` | 配置项从环境变量读取，缺失时启动报错提示明确字段名。 |
-| T02-02 | 未开始 | AI 上下文拼装函数 | `backend-agent` | 宝宝档案查询、summary 聚合结果、alert 查询 | `ai/` 下的 context builder 函数 | 能返回包含宝宝档案、7/30 天汇总、最近提醒的结构化 context dict。 |
-| T02-03 | 未开始 | 结构化 Prompt 模板 | `backend-agent` | D06 AI 输出要求、context builder | Prompt 模板函数 | Prompt 明确约束模型只引用提供数据；固定附加免责声明文本。 |
-| T02-04 | 未开始 | POST /ai/query 接入真实 LLM | `backend-agent` | T02-01、T02-02、T02-03、LLM API | `ai/router.py` 改造 `query_ai` 路由 | 提问返回真实模型回答；答案包含时间窗口和免责声明；对话日志写入数据库。 |
-| T02-05 | 未开始 | AiConversation + AiMessage 持久化 | `backend-agent` | `models/ai.py`、T02-04 | `ai/router.py` 写入对话日志 | 每次调用后 `ai_conversations` 和 `ai_messages` 表有对应记录（含 token 用量、模型名、状态）。 |
-| T02-06 | 未开始 | POST /ai/summary：日/周/月 AI 摘要接口 | `backend-agent` | D06、T02-02、T02-03、summary 接口 | `ai/router.py` 新增 `/ai/summary` 路由 | 传入 `summary_type` 和日期参数能返回 AI 生成的摘要文本；日志同步写入。 |
+| T02-01 | 已完成 | LLM 配置项接入 | `backend-agent` | `core/config.py`、D06、环境变量约定 | `config.py` 新增 `LLM_API_KEY`、`LLM_MODEL`、`LLM_BASE_URL` | 配置项从环境变量读取，缺失时启动报错提示明确字段名。 |
+| T02-02 | 已完成 | AI 上下文拼装函数 | `backend-agent` | 宝宝档案查询、summary 聚合结果、alert 查询 | `ai/` 下的 context builder 函数 | 能返回包含宝宝档案、7/30 天汇总、最近提醒的结构化 context dict。 |
+| T02-03 | 已完成 | 结构化 Prompt 模板 | `backend-agent` | D06 AI 输出要求、context builder | Prompt 模板函数 | Prompt 明确约束模型只引用提供数据；固定附加免责声明文本。 |
+| T02-04 | 已完成 | POST /ai/query 接入真实 LLM | `backend-agent` | T02-01、T02-02、T02-03、LLM API | `ai/router.py` 改造 `query_ai` 路由 | 提问返回真实模型回答；答案包含时间窗口和免责声明；对话日志写入数据库。 |
+| T02-05 | 已完成 | AiConversation + AiMessage 持久化 | `backend-agent` | `models/ai.py`、T02-04 | `ai/router.py` 写入对话日志 | 每次调用后 `ai_conversations` 和 `ai_messages` 表有对应记录（含 token 用量、模型名、状态）。 |
+| T02-06 | 已完成 | POST /ai/summary：日/周/月 AI 摘要接口 | `backend-agent` | D06、T02-02、T02-03、summary 接口 | `ai/router.py` 新增 `/ai/summary` 路由 | 传入 `summary_type` 和日期参数能返回 AI 生成的摘要文本；日志同步写入。 |
 
 ## 完成标准
 - 所有子任务子状态均为 `已完成`。
@@ -106,3 +107,4 @@
 | 时间 | 交接人 | 接手人 | 说明 |
 | --- | --- | --- | --- |
 | 2026-04-13 | Codex | `backend-agent` | 任务文档初始化，等待 T01 完成后执行。 |
+| 2026-04-13 | `backend-agent` | Codex | T02 全部子任务完成并回写状态。 |

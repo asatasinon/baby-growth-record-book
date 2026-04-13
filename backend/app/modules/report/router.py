@@ -14,7 +14,9 @@ from app.core.permissions import (
 )
 from app.core.response import success
 from app.core.security import CurrentUser, get_current_user
+from app.core.time_utils import now_ms
 from app.models.export import ExportTask
+from app.models.task import TaskJob
 from app.schemas.id_types import IdStr, to_api_id, to_db_id
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -55,6 +57,23 @@ async def create_export_task(
     )
     db.add(task)
     await db.flush()
+    db.add(
+        TaskJob(
+            job_type="export_report",
+            payload={
+                "task_id": task.id,
+                "family_id": task.family_id,
+                "baby_id": task.baby_id,
+            },
+            status="pending",
+            retry_count=0,
+            max_retries=3,
+            run_after=now_ms(),
+            locked_at=None,
+            locked_by=None,
+            error_message=None,
+        )
+    )
     await db.commit()
 
     return success(

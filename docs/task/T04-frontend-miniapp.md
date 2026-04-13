@@ -41,7 +41,7 @@
 - H5 分享页
 
 ## 依赖
-- T01 完成（PATCH 事件、家庭管理、宝宝编辑接口稳定）
+- T01 已完成（PATCH 事件、家庭管理、宝宝编辑接口稳定）
 
 ## 执行状态
 未开始
@@ -77,12 +77,12 @@
 
 | 依赖项 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| T01 PATCH /events/{event_id} | 内部任务 | 未开始 | 事件编辑页面依赖此接口 |
-| T01 PATCH /babies/{baby_id} | 内部任务 | 未开始 | 宝宝编辑依赖此接口 |
+| T01 PATCH /events/{event_id} | 内部任务 | 已完成 | 事件编辑页面依赖此接口 |
+| T01 PATCH /babies/{baby_id} | 内部任务 | 已完成 | 宝宝编辑依赖此接口 |
 | T01 POST /families | 内部任务 | 已完成 | 家庭创建接口已存在 |
 | T01 POST /families/{family_id}/members | 内部任务 | 已完成 | 成员邀请接口已存在 |
 | T01 POST /alerts/rules | 内部任务 | 已完成 | 规则创建接口已存在 |
-| T03 export_report | 内部任务 | 未开始 | 下载链接需要 Worker 生成文件后才有效 |
+| T03 export_report | 内部任务 | 已完成 | 下载链接可由 Worker 生成并回写 |
 | ECharts for Taro | 外部依赖 | 待确认 | 确认 `@antv/f2` 或 `echarts-for-weixin` 在 Taro 环境下的集成方式 |
 | 微信 `wx.login` | 外部依赖 | 待确认 | 需测试环境微信 AppID 配置 |
 

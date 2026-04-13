@@ -654,23 +654,26 @@ export default function FamilyManagePage() {
                       )}
                     </View>
                     <View className='member-actions'>
-                      <Button
-                        className='member-action-btn'
-                        size='mini'
-                        disabled={!editable}
-                        onClick={() => setEditingMemberId((prev) => (prev === member.id ? '' : member.id))}
-                      >
-                        {isEditing ? '收起' : '编辑'}
-                      </Button>
-                      <Button
-                        className='member-action-btn danger'
-                        size='mini'
-                        disabled={!deletable}
-                        loading={deletingMemberId === member.id}
-                        onClick={() => void handleRemoveMember(member)}
-                      >
-                        删除
-                      </Button>
+                      <View
+                        className={`member-action-icon edit ${isEditing ? 'active' : ''} ${!editable ? 'disabled' : ''}`}
+                        onClick={() => {
+                          if (!editable) {
+                            return
+                          }
+                          setEditingMemberId((prev) => (prev === member.id ? '' : member.id))
+                        }}
+                      />
+                      <View
+                        className={`member-action-icon delete ${deletingMemberId === member.id ? 'loading' : ''} ${
+                          !deletable ? 'disabled' : ''
+                        }`}
+                        onClick={() => {
+                          if (!deletable || deletingMemberId === member.id) {
+                            return
+                          }
+                          void handleRemoveMember(member)
+                        }}
+                      />
                     </View>
                   </View>
 

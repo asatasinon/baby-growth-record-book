@@ -128,26 +128,44 @@
     flex-shrink: 0;
   }
 
-  .member-action-btn {
-    width: 120rpx;
-    min-height: 56rpx;
-    border-radius: 999rpx;
+  .member-action-icon {
+    width: 56rpx;
+    height: 56rpx;
+    border-radius: 50%;
     border: 1rpx solid #bfd9f2;
     background: rgba(255, 255, 255, 0.95);
-    color: #355979;
-    font-size: 22rpx;
-    font-weight: 700;
-    padding: 0;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 26rpx 26rpx;
+    box-sizing: border-box;
+    cursor: pointer;
   }
 
-  .member-action-btn.danger {
+  .member-action-icon.edit {
+    background-image: url('../../assets/icons/actions/edit.svg');
+  }
+
+  .member-action-icon.edit.active {
+    border-color: #a8cdef;
+    background-color: #f2f9ff;
+  }
+
+  .member-action-icon.delete {
+    background-image: url('../../assets/icons/actions/delete.svg');
     border-color: #f3cdcd;
-    color: #d64a47;
-    background: #fff8f8;
+    background-color: #fff8f8;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 26rpx 26rpx;
   }
 
-  .member-action-btn[disabled] {
+  .member-action-icon.loading {
+    opacity: 0.7;
+  }
+
+  .member-action-icon.disabled {
     opacity: 0.45;
+    pointer-events: none;
   }
 
   .member-editor {

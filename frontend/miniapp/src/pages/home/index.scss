@@ -23,7 +23,7 @@
     position: relative;
     font-size: 34rpx;
     font-weight: 700;
-    color: var(--ink-strong);
+    color: #1b2838;
   }
 
   .metrics-grid {
@@ -50,14 +50,14 @@
     width: 34rpx;
     height: 5rpx;
     border-radius: 999rpx;
-    background: linear-gradient(90deg, var(--brand), var(--accent));
+    background: linear-gradient(90deg, #0e8fd1, #ff815f);
     opacity: 0.65;
   }
 
   .metric-label {
     display: block;
     font-size: 22rpx;
-    color: var(--text-sub);
+    color: #5e718a;
     margin-bottom: 10rpx;
   }
 
@@ -107,7 +107,7 @@
     margin-bottom: 8rpx;
     font-size: 30rpx;
     font-weight: 700;
-    color: var(--ink-strong);
+    color: #1b2838;
   }
 
   .action-desc {

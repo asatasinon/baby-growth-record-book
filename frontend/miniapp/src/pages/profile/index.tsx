@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Button, Input, Text, View } from '@tarojs/components'
 
-import { listBabies, loginWithPassword, loginWithWechat } from '@/services/api'
+import { listBabies, loginWithPassword, registerWithPassword } from '@/services/api'
 import {
   clearActiveBabyId,
   clearSession,
@@ -52,10 +52,13 @@ export default function ProfilePage() {
   const [babies, setBabies] = useState<BabyInfo[]>([])
   const [activeBabyId, setActiveBabyIdState] = useState<string>(getActiveBabyId() || '')
 
-  const [phone, setPhone] = useState('13800138000')
-  const [password, setPassword] = useState('Passw0rd!')
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
+  const [phone, setPhone] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [isLoginLoading, setIsLoginLoading] = useState(false)
-  const [isWechatLoading, setIsWechatLoading] = useState(false)
+  const [isRegisterLoading, setIsRegisterLoading] = useState(false)
   const [isBabyLoading, setIsBabyLoading] = useState(false)
 
   const activeFamily = useMemo(
@@ -130,6 +133,10 @@ export default function ProfilePage() {
       Taro.showToast({ title: '请输入手机号和密码', icon: 'none' })
       return
     }
+    if (!/^1\d{10}$/.test(nextPhone)) {
+      Taro.showToast({ title: '手机号格式不正确', icon: 'none' })
+      return
+    }
 
     setIsLoginLoading(true)
     try {
@@ -143,26 +150,42 @@ export default function ProfilePage() {
     }
   }
 
-  async function handleWechatLogin(): Promise<void> {
+  async function handleRegister(): Promise<void> {
     const nextPhone = phone.trim()
-    if (!nextPhone) {
-      Taro.showToast({ title: '请先填写手机号', icon: 'none' })
+    const nextPassword = password.trim()
+    const nextConfirmPassword = confirmPassword.trim()
+    const nextDisplayName = displayName.trim()
+
+    if (!nextPhone || !nextPassword || !nextConfirmPassword) {
+      Taro.showToast({ title: '请填写完整注册信息', icon: 'none' })
+      return
+    }
+    if (!/^1\d{10}$/.test(nextPhone)) {
+      Taro.showToast({ title: '手机号格式不正确', icon: 'none' })
+      return
+    }
+    if (nextPassword.length < 8) {
+      Taro.showToast({ title: '密码至少 8 位', icon: 'none' })
+      return
+    }
+    if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(nextPassword)) {
+      Taro.showToast({ title: '密码需同时包含字母和数字', icon: 'none' })
+      return
+    }
+    if (nextPassword !== nextConfirmPassword) {
+      Taro.showToast({ title: '两次输入密码不一致', icon: 'none' })
       return
     }
 
-    setIsWechatLoading(true)
+    setIsRegisterLoading(true)
     try {
-      const loginResult = await Taro.login()
-      if (!loginResult.code) {
-        throw new Error('未获取到微信登录 code')
-      }
-      const nextSession = await loginWithWechat(loginResult.code, nextPhone)
+      const nextSession = await registerWithPassword(nextPhone, nextPassword, nextDisplayName || undefined)
       await applySession(nextSession)
-      Taro.showToast({ title: '微信登录成功', icon: 'success' })
+      Taro.showToast({ title: '注册成功', icon: 'success' })
     } catch (error) {
-      Taro.showToast({ title: (error as Error).message || '微信登录失败', icon: 'none' })
+      Taro.showToast({ title: (error as Error).message || '注册失败', icon: 'none' })
     } finally {
-      setIsWechatLoading(false)
+      setIsRegisterLoading(false)
     }
   }
 
@@ -192,7 +215,18 @@ export default function ProfilePage() {
 
       {!session ? (
         <View className='card login-card'>
-          <Text className='hint'>支持密码登录和微信 code 登录（手机号归一）</Text>
+          <Text className='hint'>仅支持手机号 + 密码。首次使用请先注册账号。</Text>
+          <View className='pill-row auth-mode-row'>
+            <View className={`pill ${authMode === 'login' ? 'active' : ''}`} onClick={() => setAuthMode('login')}>
+              <Text>密码登录</Text>
+            </View>
+            <View
+              className={`pill ${authMode === 'register' ? 'active' : ''}`}
+              onClick={() => setAuthMode('register')}
+            >
+              <Text>账号注册</Text>
+            </View>
+          </View>
           <View className='form-item'>
             <Text className='form-label'>手机号</Text>
             <Input
@@ -214,12 +248,39 @@ export default function ProfilePage() {
               placeholder='请输入密码'
             />
           </View>
-          <Button className='btn-primary' loading={isLoginLoading} onClick={() => void handleLogin()}>
-            密码登录
-          </Button>
-          <Button plain loading={isWechatLoading} onClick={() => void handleWechatLogin()}>
-            微信登录（wx.login）
-          </Button>
+          {authMode === 'register' ? (
+            <View className='form-item'>
+              <Text className='form-label'>确认密码</Text>
+              <Input
+                className='input'
+                value={confirmPassword}
+                password
+                onInput={(event) => setConfirmPassword(event.detail.value)}
+                placeholder='请再次输入密码'
+              />
+            </View>
+          ) : null}
+          {authMode === 'register' ? (
+            <View className='form-item'>
+              <Text className='form-label'>昵称（可选）</Text>
+              <Input
+                className='input'
+                value={displayName}
+                onInput={(event) => setDisplayName(event.detail.value)}
+                placeholder='例如：宝宝爸爸'
+              />
+            </View>
+          ) : null}
+          {authMode === 'login' ? (
+            <Button className='btn-primary' loading={isLoginLoading} onClick={() => void handleLogin()}>
+              密码登录
+            </Button>
+          ) : (
+            <Button className='btn-primary' loading={isRegisterLoading} onClick={() => void handleRegister()}>
+              注册并登录
+            </Button>
+          )}
+          <Text className='hint minor-hint'>密码要求：至少 8 位，且同时包含字母和数字。</Text>
         </View>
       ) : (
         <View className='profile-content'>

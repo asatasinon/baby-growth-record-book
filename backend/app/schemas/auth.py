@@ -17,6 +17,12 @@ class PasswordLoginRequest(BaseModel):
     password: str = Field(min_length=8, max_length=128)
 
 
+class PasswordRegisterRequest(BaseModel):
+    phone: PhoneStr
+    password: str = Field(min_length=8, max_length=128)
+    display_name: str | None = Field(default=None, min_length=1, max_length=100)
+
+
 class RefreshTokenRequest(BaseModel):
     refresh_token: str = Field(min_length=16, max_length=4096)
 

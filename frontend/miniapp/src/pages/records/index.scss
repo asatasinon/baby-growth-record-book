@@ -41,7 +41,7 @@
     width: 8rpx;
     height: 100%;
     border-radius: 24rpx 0 0 24rpx;
-    background: linear-gradient(180deg, var(--brand), var(--accent));
+    background: linear-gradient(180deg, #0e8fd1, #ff815f);
   }
 
   .event-summary {
@@ -49,13 +49,13 @@
     margin-top: 16rpx;
     font-size: 30rpx;
     font-weight: 700;
-    color: var(--ink-strong);
+    color: #1b2838;
   }
 
   .event-notes {
     display: block;
     margin-top: 10rpx;
-    color: var(--text-sub);
+    color: #5e718a;
     font-size: 24rpx;
     line-height: 1.5;
   }
@@ -120,7 +120,7 @@
 
   .picker-like {
     line-height: 1.6;
-    color: var(--text-main);
+    color: #2a3c52;
   }
 
   .edit-actions {
@@ -168,7 +168,7 @@
   .save-btn {
     border: none;
     color: #fff;
-    background: linear-gradient(132deg, var(--brand), var(--brand-2));
+    background: linear-gradient(132deg, #0e8fd1, #26c1b4);
   }
 
   .save-btn::before {

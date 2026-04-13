@@ -135,13 +135,27 @@ def to_api_id(value: int) -> str:
 ```
 
 ### `POST /auth/password/login`
-- 用途：手机号+密码登录；若手机号账号不存在则自动创建首个账号并登录。
+- 用途：手机号+密码登录；仅允许已注册账号登录。
 - 请求：
 
 ```json
 {
   "phone": "13800138000",
   "password": "Passw0rd!"
+}
+```
+
+- 响应：与 `POST /auth/wechat/login` 一致。
+
+### `POST /auth/register`
+- 用途：手机号+密码注册；注册成功后直接返回登录态。
+- 请求：
+
+```json
+{
+  "phone": "13800138000",
+  "password": "Passw0rd!",
+  "display_name": "宝宝爸爸"
 }
 ```
 

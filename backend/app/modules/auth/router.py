@@ -24,6 +24,7 @@ from app.models.user import User, UserIdentity
 from app.schemas.auth import (
     LogoutRequest,
     PasswordLoginRequest,
+    PasswordRegisterRequest,
     RefreshTokenRequest,
     WechatLoginRequest,
 )
@@ -297,8 +298,39 @@ async def password_login(
     user = await _find_user_by_phone(phone, db)
 
     if user is None:
+        raise AppError(
+            "UNAUTHORIZED",
+            "account not registered",
+            data={"field": "phone", "reason": "please register first"},
+            status_code=401,
+        )
+    _ensure_user_is_active(user)
+
+    if user.password_hash is None:
+        raise AppError(
+            "UNAUTHORIZED",
+            "password not set for this account",
+            data={"field": "password", "reason": "please register first"},
+            status_code=401,
+        )
+    if not verify_password(payload.password, user.password_hash):
+        raise AppError("UNAUTHORIZED", "invalid phone or password", status_code=401)
+
+    return success(await _build_login_data(user, db))
+
+
+@router.post("/register")
+async def password_register(
+    payload: PasswordRegisterRequest,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    phone = _validate_phone_or_raise(_normalize_phone(payload.phone))
+    display_name = payload.display_name.strip() if payload.display_name else ""
+    user = await _find_user_by_phone(phone, db)
+
+    if user is None:
         user = User(
-            display_name=f"家长{phone[-4:]}",
+            display_name=display_name or f"家长{phone[-4:]}",
             phone_ciphertext=encrypt_phone(phone),
             password_hash=hash_password(payload.password),
         )
@@ -306,11 +338,11 @@ async def password_login(
         await db.flush()
     else:
         _ensure_user_is_active(user)
-        if user.password_hash is None:
-            # MVP：首次手机号密码登录时补齐密码凭证。
-            user.password_hash = hash_password(payload.password)
-        elif not verify_password(payload.password, user.password_hash):
-            raise AppError("UNAUTHORIZED", "invalid phone or password", status_code=401)
+        if user.password_hash is not None:
+            raise AppError("CONFLICT", "phone already registered", status_code=409)
+        user.password_hash = hash_password(payload.password)
+        if display_name:
+            user.display_name = display_name
 
     return success(await _build_login_data(user, db))
 

@@ -1,10 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Canvas, Text, View } from '@tarojs/components'
-import { LineChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent } from 'echarts/components'
-import * as echarts from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
 
 import { getTrendPoints } from '@/services/api'
 import { getActiveBabyId, getActiveFamilyId, getSession } from '@/services/storage'
@@ -12,8 +8,6 @@ import type { TrendPoint, TrendResult } from '@/types/domain'
 import { dayWindow, formatDateTime, formatMonthDayTime } from '@/utils/time'
 
 import './index.scss'
-
-echarts.use([LineChart, GridComponent, TooltipComponent, CanvasRenderer])
 
 const RANGE_OPTIONS = [7, 15, 30, 60, 90] as const
 
@@ -58,32 +52,140 @@ function calcStats(points: TrendPoint[]): { average: number; latest: number } {
   return { average, latest }
 }
 
+function getCanvasRect(range: RangeDays): Promise<{ width: number; height: number } | null> {
+  return new Promise((resolve) => {
+    const query = Taro.createSelectorQuery()
+    query.select(`#trend-canvas-${range}`).boundingClientRect()
+    query.exec((result) => {
+      const rect = (result?.[0] || null) as { width?: number; height?: number } | null
+      if (!rect || !rect.width || !rect.height) {
+        resolve(null)
+        return
+      }
+      resolve({ width: rect.width, height: rect.height })
+    })
+  })
+}
+
+async function drawTrendCanvas(range: RangeDays, points: TrendPoint[]): Promise<void> {
+  const rect = await getCanvasRect(range)
+  if (!rect) {
+    throw new Error('canvas size missing')
+  }
+
+  const width = rect.width
+  const height = rect.height
+  const padding = { left: 40, right: 16, top: 20, bottom: 30 }
+  const plotWidth = Math.max(1, width - padding.left - padding.right)
+  const plotHeight = Math.max(1, height - padding.top - padding.bottom)
+
+  const values = points.map((item) => item.value)
+  let minValue = Math.min(...values)
+  let maxValue = Math.max(...values)
+  if (maxValue === minValue) {
+    maxValue += 1
+    minValue -= 1
+  }
+
+  const xStep = points.length > 1 ? plotWidth / (points.length - 1) : 0
+  const pointPositions = points.map((point, index) => {
+    const x = points.length === 1 ? padding.left + plotWidth / 2 : padding.left + xStep * index
+    const ratio = (point.value - minValue) / (maxValue - minValue)
+    const y = padding.top + (1 - ratio) * plotHeight
+    return { x, y, raw: point }
+  })
+
+  const ctx = Taro.createCanvasContext(`trend-canvas-${range}`)
+
+  ctx.setFillStyle('#f8fcff')
+  ctx.fillRect(0, 0, width, height)
+
+  ctx.setStrokeStyle('#dbe5f5')
+  ctx.setLineWidth(1)
+  for (let i = 0; i <= 4; i += 1) {
+    const y = padding.top + (plotHeight / 4) * i
+    ctx.beginPath()
+    ctx.moveTo(padding.left, y)
+    ctx.lineTo(width - padding.right, y)
+    ctx.stroke()
+  }
+
+  if (pointPositions.length > 0) {
+    ctx.beginPath()
+    pointPositions.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y)
+      } else {
+        ctx.lineTo(point.x, point.y)
+      }
+    })
+    const lastPoint = pointPositions[pointPositions.length - 1]
+    const firstPoint = pointPositions[0]
+    ctx.lineTo(lastPoint.x, padding.top + plotHeight)
+    ctx.lineTo(firstPoint.x, padding.top + plotHeight)
+    ctx.closePath()
+    ctx.setFillStyle('rgba(15, 107, 216, 0.16)')
+    ctx.fill()
+
+    ctx.beginPath()
+    pointPositions.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y)
+      } else {
+        ctx.lineTo(point.x, point.y)
+      }
+    })
+    ctx.setStrokeStyle('#0f6bd8')
+    ctx.setLineWidth(2)
+    ctx.stroke()
+
+    pointPositions.forEach((point) => {
+      ctx.beginPath()
+      ctx.setFillStyle('#16a4d8')
+      ctx.arc(point.x, point.y, 2.8, 0, Math.PI * 2)
+      ctx.fill()
+    })
+  }
+
+  const labelIndexes = Array.from(
+    new Set([0, Math.floor((points.length - 1) / 2), Math.max(points.length - 1, 0)])
+  )
+
+  ctx.setFontSize(10)
+  ctx.setFillStyle('#5e6b84')
+  ctx.setTextAlign('center')
+  ctx.setTextBaseline('top')
+  labelIndexes.forEach((index) => {
+    const target = pointPositions[index]
+    if (!target) {
+      return
+    }
+    ctx.fillText(formatMonthDayTime(target.raw.bucket_date), target.x, padding.top + plotHeight + 8)
+  })
+
+  await new Promise<void>((resolve) => {
+    ctx.draw(false, () => resolve())
+  })
+}
+
 export default function TrendsPage() {
-  const isWeb = Taro.getEnv() === Taro.ENV_TYPE.WEB
   const [metricCode, setMetricCode] = useState<MetricCode>('feeding_total_ml')
   const [trends, setTrends] = useState<TrendMap>(() => buildTrendMap(null))
   const [isLoading, setIsLoading] = useState(false)
   const [chartReadyMap, setChartReadyMap] = useState<ReadyMap>(() => buildReadyMap(false))
+  const [chartAttemptedMap, setChartAttemptedMap] = useState<ReadyMap>(() => buildReadyMap(false))
 
-  const chartRefs = useRef<Partial<Record<RangeDays, echarts.EChartsType>>>({})
-
-  function disposeChart(range: RangeDays): void {
-    const chart = chartRefs.current[range]
-    if (chart) {
-      chart.dispose()
-      delete chartRefs.current[range]
-    }
-  }
-
-  function disposeAllCharts(resetReady = true): void {
-    RANGE_OPTIONS.forEach((range) => disposeChart(range))
-    if (resetReady) {
-      setChartReadyMap(buildReadyMap(false))
-    }
+  function resetChartState(): void {
+    setChartReadyMap(buildReadyMap(false))
+    setChartAttemptedMap(buildReadyMap(false))
   }
 
   function markChartReady(range: RangeDays, ready: boolean): void {
     setChartReadyMap((prev) => ({ ...prev, [range]: ready }))
+  }
+
+  function markChartAttempted(range: RangeDays, attempted: boolean): void {
+    setChartAttemptedMap((prev) => ({ ...prev, [range]: attempted }))
   }
 
   async function loadTrends(nextMetric = metricCode): Promise<void> {
@@ -93,12 +195,12 @@ export default function TrendsPage() {
 
     if (!session || !familyId || !babyId) {
       setTrends(buildTrendMap(null))
-      disposeAllCharts(true)
+      resetChartState()
       return
     }
 
     setIsLoading(true)
-    setChartReadyMap(buildReadyMap(false))
+    resetChartState()
 
     try {
       const trendEntries = await Promise.all(
@@ -133,110 +235,46 @@ export default function TrendsPage() {
   })
 
   useEffect(() => {
-    return () => {
-      disposeAllCharts(false)
-    }
-  }, [])
-
-  useEffect(() => {
     if (isLoading) {
-      disposeAllCharts(true)
+      resetChartState()
       return
     }
 
+    let canceled = false
     const timer = setTimeout(() => {
-      disposeAllCharts(true)
-
       RANGE_OPTIONS.forEach((range) => {
         const trend = trends[range]
         const points = trend?.points || []
 
         if (points.length === 0) {
+          markChartReady(range, false)
+          markChartAttempted(range, true)
           return
         }
 
-        const chartOption = {
-          animation: true,
-          tooltip: { trigger: 'axis' },
-          grid: { left: 32, right: 18, top: 24, bottom: 34 },
-          xAxis: {
-            type: 'category',
-            boundaryGap: false,
-            data: points.map((item) => formatMonthDayTime(item.bucket_date)),
-            axisLabel: { color: '#5e6b84', fontSize: 10, hideOverlap: true }
-          },
-          yAxis: {
-            type: 'value',
-            axisLabel: { color: '#5e6b84', fontSize: 10 },
-            splitLine: { lineStyle: { color: '#dbe5f5' } }
-          },
-          series: [
-            {
-              type: 'line',
-              smooth: true,
-              showSymbol: true,
-              symbolSize: 5,
-              lineStyle: { width: 3, color: '#0f6bd8' },
-              itemStyle: { color: '#16a4d8' },
-              areaStyle: {
-                color: 'rgba(15, 107, 216, 0.15)'
-              },
-              data: points.map((item) => Number(item.value.toFixed(2)))
-            }
-          ]
-        } as const
-
-        try {
-          if (isWeb && typeof document !== 'undefined') {
-            const container = document.getElementById(`trend-dom-${range}`)
-            if (!container) {
+        void drawTrendCanvas(range, points)
+          .then(() => {
+            if (canceled) {
               return
             }
-            const chart = echarts.init(container)
-            chart.setOption(chartOption)
-            chartRefs.current[range] = chart
             markChartReady(range, true)
-            return
-          }
-
-          const query = Taro.createSelectorQuery()
-          query
-            .select(`#trend-canvas-${range}`)
-            .fields({ node: true, size: true })
-            .exec((result) => {
-              const canvasInfo = (result?.[0] || null) as {
-                node?: unknown
-                width?: number
-                height?: number
-              } | null
-
-              if (!canvasInfo || !canvasInfo.node || !canvasInfo.width || !canvasInfo.height) {
-                return
-              }
-
-              const dpr = Taro.getSystemInfoSync().pixelRatio || 1
-              const canvas = canvasInfo.node as { width: number; height: number }
-              canvas.width = canvasInfo.width * dpr
-              canvas.height = canvasInfo.height * dpr
-
-              const chart = echarts.init(canvas as never, undefined, {
-                renderer: 'canvas',
-                width: canvasInfo.width,
-                height: canvasInfo.height,
-                devicePixelRatio: dpr
-              })
-              chart.setOption(chartOption)
-              chartRefs.current[range] = chart
-              markChartReady(range, true)
-            })
-        } catch (_error) {
-          markChartReady(range, false)
-        }
+            markChartAttempted(range, true)
+          })
+          .catch(() => {
+            if (canceled) {
+              return
+            }
+            markChartReady(range, false)
+            markChartAttempted(range, true)
+          })
       })
     }, 80)
 
-    return () => clearTimeout(timer)
-  }, [isLoading, isWeb, trends])
+    return () => {
+      canceled = true
+      clearTimeout(timer)
+    }
+  }, [isLoading, trends])
 
   const hasContext = Boolean(getSession() && getActiveFamilyId(getSession() || undefined) && getActiveBabyId())
 
@@ -302,19 +340,12 @@ export default function TrendsPage() {
 
               {!isLoading && points.length > 0 ? (
                 <View>
-                  {isWeb ? (
-                    <View id={`trend-dom-${range}`} className='trend-dom' />
-                  ) : (
-                    <Canvas
-                      id={`trend-canvas-${range}`}
-                      canvasId={`trend-canvas-${range}`}
-                      type='2d'
-                      className='trend-canvas'
-                      disableScroll
-                    />
-                  )}
-                  {!chartReadyMap[range] ? (
+                  {!chartAttemptedMap[range] || chartReadyMap[range] ? (
+                    <Canvas id={`trend-canvas-${range}`} canvasId={`trend-canvas-${range}`} className='trend-canvas' />
+                  ) : null}
+                  {chartAttemptedMap[range] && !chartReadyMap[range] ? (
                     <View className='fallback-list'>
+                      <Text className='muted fallback-tip'>图表渲染失败，已切换为明细列表。</Text>
                       {points.map((point) => (
                         <View key={`${range}-${point.bucket_date}-${point.value}`} className='fallback-row'>
                           <Text className='muted'>{formatDateTime(point.bucket_date)}</Text>

@@ -38,13 +38,30 @@ paths:
   /auth/password/login:
     post:
       tags: [auth]
-      summary: Login with phone and password (auto-register on first login)
+      summary: Login with phone and password
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PasswordLoginRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Register account with phone and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordRegisterRequest'
       responses:
         '200':
           description: success
@@ -812,6 +829,21 @@ components:
           type: string
           minLength: 8
           maxLength: 128
+    PasswordRegisterRequest:
+      type: object
+      required: [phone, password]
+      properties:
+        phone:
+          type: string
+          pattern: '^1\d{10}$'
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 100
     RefreshTokenRequest:
       type: object
       required: [refresh_token]

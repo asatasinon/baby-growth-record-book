@@ -35,13 +35,18 @@ export async function loginWithPassword(phone: string, password: string): Promis
   })
 }
 
-export async function loginWithWechat(code: string, phone: string): Promise<AuthSession> {
+export async function registerWithPassword(
+  phone: string,
+  password: string,
+  displayName?: string
+): Promise<AuthSession> {
   return request<AuthSession>({
-    path: '/auth/wechat/login',
+    path: '/auth/register',
     method: 'POST',
     data: {
-      code,
-      phone
+      phone,
+      password,
+      display_name: displayName || undefined
     }
   })
 }

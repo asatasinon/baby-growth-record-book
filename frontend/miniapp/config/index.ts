@@ -28,13 +28,21 @@ function loadFrontendEnv() {
 
     const key = line.slice(0, delimiterIndex).trim()
     const value = line.slice(delimiterIndex + 1).trim().replace(/^['"]|['"]$/g, '')
-    if (!process.env[key]) {
-      process.env[key] = value
-    }
+    process.env[key] = value
   }
 }
 
 loadFrontendEnv()
+
+function requireApiBaseUrl(): string {
+  const rawValue = process.env.TARO_APP_API_BASE_URL?.trim()
+  if (!rawValue || rawValue === 'undefined' || rawValue === 'null') {
+    throw new Error('Missing TARO_APP_API_BASE_URL in frontend/.env')
+  }
+  return rawValue.replace(/\/+$/, '')
+}
+
+const API_BASE_URL = requireApiBaseUrl()
 
 export default defineConfig({
   projectName: 'baby-growth-miniapp',
@@ -49,6 +57,9 @@ export default defineConfig({
   outputRoot: 'dist',
   alias: {
     '@': path.resolve(__dirname, '..', 'src')
+  },
+  defineConstants: {
+    __API_BASE_URL__: JSON.stringify(API_BASE_URL)
   },
   plugins: ['@tarojs/plugin-framework-react'],
   framework: 'react',

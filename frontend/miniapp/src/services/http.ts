@@ -2,6 +2,8 @@ import Taro from '@tarojs/taro'
 
 import type { ApiEnvelope } from '@/types/domain'
 
+declare const __API_BASE_URL__: string
+
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE'
 
 interface RequestOptions {
@@ -12,17 +14,11 @@ interface RequestOptions {
   query?: Record<string, string | number | undefined | null>
 }
 
-const DEFAULT_API_BASE_URL = 'http://localhost:8080/api/v1'
-
 function resolveApiBaseUrl(): string {
-  const rawValue =
-    typeof process !== 'undefined' && process.env ? process.env.TARO_APP_API_BASE_URL : undefined
-  const normalized = rawValue?.trim()
-
+  const normalized = __API_BASE_URL__?.trim()
   if (!normalized || normalized === 'undefined' || normalized === 'null') {
-    return DEFAULT_API_BASE_URL
+    throw new Error('Invalid __API_BASE_URL__ injected at build time')
   }
-
   return normalized.replace(/\/+$/, '')
 }
 

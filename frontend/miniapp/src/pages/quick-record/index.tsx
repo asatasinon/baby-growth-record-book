@@ -1,12 +1,17 @@
 import { useState } from 'react'
 import Taro from '@tarojs/taro'
-import { Button, Input, Text, View } from '@tarojs/components'
+import { Button, Input, Picker, Text, View } from '@tarojs/components'
 
-import { EVENT_TYPE_LABEL_MAP, EXCRETION_LABEL_MAP, QUICK_EVENT_TYPES } from '@/constants/event'
+import {
+  EVENT_TYPE_LABEL_MAP,
+  EXCRETION_TYPE_OPTIONS,
+  FEEDING_TYPE_OPTIONS,
+  QUICK_EVENT_TYPES
+} from '@/constants/event'
 import { createEvent } from '@/services/api'
 import { getActiveBabyId, getActiveFamilyId, getSession } from '@/services/storage'
 import type { EventType } from '@/types/domain'
-import { resolveTimezone } from '@/utils/time'
+import { DAY_MS, MINUTE_MS, formatDate, formatTime, parseDateTimeToMs, resolveTimezone } from '@/utils/time'
 
 import './index.scss'
 
@@ -35,8 +40,15 @@ export default function QuickRecordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [quickType, setQuickType] = useState<EventType>('feeding')
 
+  const [feedingType, setFeedingType] = useState<(typeof FEEDING_TYPE_OPTIONS)[number]['value']>('formula_bottle')
   const [feedingVolume, setFeedingVolume] = useState('90')
-  const [excretionType, setExcretionType] = useState('urine')
+  const [feedingStartDate, setFeedingStartDate] = useState(() => formatDate(Date.now() - 15 * MINUTE_MS))
+  const [feedingStartTime, setFeedingStartTime] = useState(() => formatTime(Date.now() - 15 * MINUTE_MS))
+  const [feedingEndDate, setFeedingEndDate] = useState(() => formatDate(Date.now()))
+  const [feedingEndTime, setFeedingEndTime] = useState(() => formatTime(Date.now()))
+  const [excretionTypes, setExcretionTypes] = useState<Array<(typeof EXCRETION_TYPE_OPTIONS)[number]['value']>>([
+    'urine'
+  ])
   const [sleepMinutes, setSleepMinutes] = useState('60')
   const [weightG, setWeightG] = useState('4000')
   const [temperatureC, setTemperatureC] = useState('')
@@ -45,6 +57,30 @@ export default function QuickRecordPage() {
   const [vaccineName, setVaccineName] = useState('')
   const [milestoneText, setMilestoneText] = useState('')
   const [notes, setNotes] = useState('')
+
+  function isBottleFeedingType(type: (typeof FEEDING_TYPE_OPTIONS)[number]['value']): boolean {
+    return type === 'formula_bottle' || type === 'breast_bottle'
+  }
+
+  function toggleExcretionType(type: (typeof EXCRETION_TYPE_OPTIONS)[number]['value']): void {
+    setExcretionTypes((prev) => {
+      if (prev.includes(type)) {
+        return prev.filter((item) => item !== type)
+      }
+      return [...prev, type]
+    })
+  }
+
+  function resolveFeedingDurationMinutes(startAt: number, endAt: number): number {
+    return Math.max(1, Math.round((endAt - startAt) / MINUTE_MS))
+  }
+
+  function normalizeEndAt(startAt: number, endAt: number): number {
+    if (endAt > startAt) {
+      return endAt
+    }
+    return endAt + DAY_MS
+  }
 
   async function submitQuickRecord(): Promise<void> {
     const session = getSession()
@@ -56,22 +92,74 @@ export default function QuickRecordPage() {
     }
 
     let payload: Record<string, unknown>
+    let occurredAt = Date.now()
+    let startAt: number | undefined
+    let endAt: number | undefined
 
     if (quickType === 'feeding') {
-      const volume = Number(feedingVolume)
-      if (!Number.isFinite(volume) || volume <= 0) {
-        Taro.showToast({ title: '请输入有效喂养毫升数', icon: 'none' })
+      const rawStartAt = parseDateTimeToMs(feedingStartDate, feedingStartTime)
+      const rawEndAt = parseDateTimeToMs(feedingEndDate, feedingEndTime)
+      const normalizedEndAt = normalizeEndAt(rawStartAt, rawEndAt)
+      if (normalizedEndAt <= rawStartAt) {
+        Taro.showToast({ title: '喂养结束时间必须晚于开始时间', icon: 'none' })
         return
       }
-      payload = {
-        mode: 'bottle',
-        volume,
-        unit: 'ml'
+
+      const duration = resolveFeedingDurationMinutes(rawStartAt, normalizedEndAt)
+
+      const nextPayload: Record<string, unknown> = {
+        feeding_type: feedingType,
+        mode: feedingType,
+        duration_minutes: duration
       }
+
+      if (isBottleFeedingType(feedingType)) {
+        const volume = Number(feedingVolume)
+        if (!Number.isFinite(volume) || volume <= 0) {
+          Taro.showToast({ title: '请输入有效喂养毫升数', icon: 'none' })
+          return
+        }
+        nextPayload.volume = volume
+        nextPayload.unit = 'ml'
+      }
+
+      payload = nextPayload
+      startAt = rawStartAt
+      endAt = normalizedEndAt
+      occurredAt = normalizedEndAt
     } else if (quickType === 'excretion') {
-      payload = {
-        excretion_type: excretionType || 'unknown'
+      if (excretionTypes.length === 0) {
+        Taro.showToast({ title: '请至少选择一种排泄类型', icon: 'none' })
+        return
       }
+
+      setIsSubmitting(true)
+      try {
+        await Promise.all(
+          excretionTypes.map((excretionType) =>
+            createEvent({
+              session,
+              familyId: context.familyId,
+              babyId: context.babyId,
+              eventType: quickType,
+              occurredAt,
+              notes: notes.trim() || undefined,
+              payload: {
+                excretion_type: excretionType,
+                timezone: resolveTimezone()
+              }
+            })
+          )
+        )
+
+        setNotes('')
+        Taro.showToast({ title: `记录成功（${excretionTypes.length} 条）`, icon: 'success' })
+      } catch (error) {
+        Taro.showToast({ title: (error as Error).message || '记录失败', icon: 'none' })
+      } finally {
+        setIsSubmitting(false)
+      }
+      return
     } else if (quickType === 'sleep') {
       const duration = Number(sleepMinutes)
       if (!Number.isFinite(duration) || duration <= 0) {
@@ -134,7 +222,9 @@ export default function QuickRecordPage() {
         familyId: context.familyId,
         babyId: context.babyId,
         eventType: quickType,
-        occurredAt: Date.now(),
+        occurredAt,
+        startAt,
+        endAt,
         notes: notes.trim() || undefined,
         payload: {
           ...payload,
@@ -146,6 +236,14 @@ export default function QuickRecordPage() {
       if (quickType === 'medication') {
         setMedicationName('')
         setMedicationDosage('')
+      }
+      if (quickType === 'feeding') {
+        const now = Date.now()
+        setFeedingType('formula_bottle')
+        setFeedingStartDate(formatDate(now - 15 * MINUTE_MS))
+        setFeedingStartTime(formatTime(now - 15 * MINUTE_MS))
+        setFeedingEndDate(formatDate(now))
+        setFeedingEndTime(formatTime(now))
       }
       if (quickType === 'vaccine') {
         setVaccineName('')
@@ -208,15 +306,71 @@ export default function QuickRecordPage() {
         </View>
 
         {quickType === 'feeding' && (
-          <View className='form-item'>
-            <Text className='form-label'>喂养毫升数</Text>
-            <Input
-              className='input'
-              type='number'
-              value={feedingVolume}
-              onInput={(event) => setFeedingVolume(event.detail.value)}
-              placeholder='例如 90'
-            />
+          <View>
+            <View className='form-item'>
+              <Text className='form-label'>喂养类型</Text>
+              <View className='pill-row'>
+                {FEEDING_TYPE_OPTIONS.map((item) => (
+                  <View
+                    key={item.value}
+                    className={`pill ${feedingType === item.value ? 'active' : ''}`}
+                    onClick={() => setFeedingType(item.value)}
+                  >
+                    <Text>{item.label}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {isBottleFeedingType(feedingType) ? (
+              <View className='form-item'>
+                <Text className='form-label'>喂养毫升数</Text>
+                <Input
+                  className='input'
+                  type='number'
+                  value={feedingVolume}
+                  onInput={(event) => setFeedingVolume(event.detail.value)}
+                  placeholder='例如 90'
+                />
+              </View>
+            ) : null}
+
+            <View className='form-item'>
+              <Text className='form-label'>开始日期</Text>
+              <Picker mode='date' value={feedingStartDate} onChange={(event) => setFeedingStartDate(event.detail.value)}>
+                <View className='input picker-like'>{feedingStartDate}</View>
+              </Picker>
+            </View>
+
+            <View className='form-item'>
+              <Text className='form-label'>开始时间</Text>
+              <Picker mode='time' value={feedingStartTime} onChange={(event) => setFeedingStartTime(event.detail.value)}>
+                <View className='input picker-like'>{feedingStartTime}</View>
+              </Picker>
+            </View>
+
+            <View className='form-item'>
+              <Text className='form-label'>结束日期</Text>
+              <Picker mode='date' value={feedingEndDate} onChange={(event) => setFeedingEndDate(event.detail.value)}>
+                <View className='input picker-like'>{feedingEndDate}</View>
+              </Picker>
+            </View>
+
+            <View className='form-item'>
+              <Text className='form-label'>结束时间</Text>
+              <Picker mode='time' value={feedingEndTime} onChange={(event) => setFeedingEndTime(event.detail.value)}>
+                <View className='input picker-like'>{feedingEndTime}</View>
+              </Picker>
+            </View>
+
+            <Text className='muted'>
+              当前时长：
+              {resolveFeedingDurationMinutes(
+                parseDateTimeToMs(feedingStartDate, feedingStartTime),
+                normalizeEndAt(parseDateTimeToMs(feedingStartDate, feedingStartTime), parseDateTimeToMs(feedingEndDate, feedingEndTime))
+              )}{' '}
+              分钟
+            </Text>
           </View>
         )}
 
@@ -224,16 +378,17 @@ export default function QuickRecordPage() {
           <View className='form-item'>
             <Text className='form-label'>排泄类型</Text>
             <View className='pill-row'>
-              {['urine', 'stool', 'mixed'].map((item) => (
+              {EXCRETION_TYPE_OPTIONS.map((item) => (
                 <View
-                  key={item}
-                  className={`pill ${excretionType === item ? 'active' : ''}`}
-                  onClick={() => setExcretionType(item)}
+                  key={item.value}
+                  className={`pill ${excretionTypes.includes(item.value) ? 'active' : ''}`}
+                  onClick={() => toggleExcretionType(item.value)}
                 >
-                  <Text>{EXCRETION_LABEL_MAP[item]}</Text>
+                  <Text>{item.label}</Text>
                 </View>
               ))}
             </View>
+            <Text className='muted'>可多选，多选会一次创建多条记录。</Text>
           </View>
         )}
 

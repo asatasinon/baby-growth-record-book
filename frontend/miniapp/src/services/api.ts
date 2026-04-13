@@ -264,6 +264,8 @@ export async function listEvents(params: ListEventsParams): Promise<GrowthEvent[
 interface CreateEventPayload extends SessionBabyContext {
   eventType: EventType
   occurredAt: number
+  startAt?: number
+  endAt?: number
   notes?: string
   payload: Record<string, unknown>
 }
@@ -278,6 +280,8 @@ export async function createEvent(payload: CreateEventPayload): Promise<GrowthEv
       baby_id: payload.babyId,
       event_type: payload.eventType,
       occurred_at: payload.occurredAt,
+      start_at: payload.startAt,
+      end_at: payload.endAt,
       timezone: 'Asia/Shanghai',
       notes: payload.notes,
       payload: payload.payload

@@ -6,29 +6,80 @@ import {
   EVENT_TYPE_COLOR_MAP,
   EVENT_TYPE_LABEL_MAP,
   EVENT_TYPE_OPTIONS,
-  EXCRETION_LABEL_MAP
+  EXCRETION_LABEL_MAP,
+  FEEDING_TYPE_LABEL_MAP,
+  FEEDING_TYPE_OPTIONS
 } from '@/constants/event'
 import { deleteEvent, getEvent, listEvents, updateEvent } from '@/services/api'
 import { getActiveBabyId, getActiveFamilyId, getSession } from '@/services/storage'
 import type { EventType, GrowthEvent } from '@/types/domain'
-import { dayWindow, formatDate, formatDateTime, formatMinutes, formatTime, parseDateTimeToMs } from '@/utils/time'
+import { DAY_MS, MINUTE_MS, dayWindow, formatDate, formatDateTime, formatMinutes, formatTime, parseDateTimeToMs } from '@/utils/time'
 
 import './index.scss'
 
 type EventFilterType = 'all' | EventType
 
-const FEEDING_MODE_OPTIONS = [
-  { value: 'bottle', label: '奶瓶' },
-  { value: 'formula', label: '配方奶' },
-  { value: 'breastfeeding', label: '母乳' }
-]
+type FeedingTypeValue = (typeof FEEDING_TYPE_OPTIONS)[number]['value']
+
+function resolveFeedingType(payload: Record<string, unknown>): FeedingTypeValue {
+  const rawType = String(payload.feeding_type || payload.mode || '')
+  if (rawType === 'formula_bottle' || rawType === 'breast_bottle' || rawType === 'breast_direct') {
+    return rawType
+  }
+
+  if (rawType === 'formula') {
+    return 'formula_bottle'
+  }
+  if (rawType === 'bottle') {
+    return 'breast_bottle'
+  }
+  if (rawType === 'breastfeeding') {
+    return 'breast_direct'
+  }
+  return 'formula_bottle'
+}
+
+function isBottleFeedingType(type: FeedingTypeValue): boolean {
+  return type === 'formula_bottle' || type === 'breast_bottle'
+}
+
+function normalizeEndAt(startAt: number, endAt: number): number {
+  if (endAt > startAt) {
+    return endAt
+  }
+  return endAt + DAY_MS
+}
+
+function resolveFeedingDurationMinutes(
+  startAt: number | null,
+  endAt: number | null,
+  payload: Record<string, unknown>
+): number {
+  const payloadDuration = Number(payload.duration_minutes)
+  if (Number.isFinite(payloadDuration) && payloadDuration > 0) {
+    return Math.round(payloadDuration)
+  }
+  if (startAt !== null && endAt !== null && endAt > startAt) {
+    return Math.max(1, Math.round((endAt - startAt) / MINUTE_MS))
+  }
+  return 0
+}
 
 function summarizeEvent(event: GrowthEvent): string {
   const payload = event.payload || {}
 
   if (event.event_type === 'feeding') {
-    const volume = payload.volume
-    return `${volume ?? 0} ml · ${String(payload.mode || '未标注方式')}`
+    const feedingType = resolveFeedingType(payload)
+    const duration = resolveFeedingDurationMinutes(event.start_at, event.end_at, payload)
+    const volume = Number(payload.volume)
+    const parts = [FEEDING_TYPE_LABEL_MAP[feedingType] || '喂养']
+    if (isBottleFeedingType(feedingType) && Number.isFinite(volume) && volume > 0) {
+      parts.push(`${volume} ml`)
+    }
+    if (duration > 0) {
+      parts.push(`${duration} 分钟`)
+    }
+    return parts.join(' · ')
   }
 
   if (event.event_type === 'excretion') {
@@ -69,7 +120,9 @@ export default function RecordsPage() {
   const [editPayloadBase, setEditPayloadBase] = useState<Record<string, unknown>>({})
 
   const [editFeedingVolume, setEditFeedingVolume] = useState('')
-  const [editFeedingMode, setEditFeedingMode] = useState('bottle')
+  const [editFeedingType, setEditFeedingType] = useState<FeedingTypeValue>('formula_bottle')
+  const [editFeedingStartDate, setEditFeedingStartDate] = useState(formatDate(Date.now() - 15 * MINUTE_MS))
+  const [editFeedingStartTime, setEditFeedingStartTime] = useState(formatTime(Date.now() - 15 * MINUTE_MS))
   const [editExcretionType, setEditExcretionType] = useState('unknown')
   const [editSleepMinutes, setEditSleepMinutes] = useState('')
   const [editWeightG, setEditWeightG] = useState('')
@@ -90,7 +143,9 @@ export default function RecordsPage() {
     setEditNotes('')
     setEditPayloadBase({})
     setEditFeedingVolume('')
-    setEditFeedingMode('bottle')
+    setEditFeedingType('formula_bottle')
+    setEditFeedingStartDate(formatDate(Date.now() - 15 * MINUTE_MS))
+    setEditFeedingStartTime(formatTime(Date.now() - 15 * MINUTE_MS))
     setEditExcretionType('unknown')
     setEditSleepMinutes('')
     setEditWeightG('')
@@ -164,14 +219,18 @@ export default function RecordsPage() {
     try {
       const detail = await getEvent(session, eventId)
       const payload = detail.payload || {}
+      const endAt = detail.end_at || detail.occurred_at
+      const startAt = detail.start_at || endAt - 15 * MINUTE_MS
 
-      setEditDate(formatDate(detail.occurred_at))
-      setEditTime(formatTime(detail.occurred_at))
+      setEditDate(formatDate(endAt))
+      setEditTime(formatTime(endAt))
       setEditNotes(detail.notes || '')
       setEditPayloadBase(payload)
 
       setEditFeedingVolume(payload.volume !== undefined ? String(payload.volume) : '')
-      setEditFeedingMode(String(payload.mode || 'bottle'))
+      setEditFeedingType(resolveFeedingType(payload))
+      setEditFeedingStartDate(formatDate(startAt))
+      setEditFeedingStartTime(formatTime(startAt))
       setEditExcretionType(String(payload.excretion_type || 'unknown'))
       setEditSleepMinutes(payload.duration_minutes !== undefined ? String(payload.duration_minutes) : '')
       setEditWeightG(payload.weight_g !== undefined ? String(payload.weight_g) : '')
@@ -188,26 +247,45 @@ export default function RecordsPage() {
     }
   }
 
-  function buildEditedPayload(eventType: EventType): Record<string, unknown> | null {
+  function buildEditedPayload(eventType: EventType): {
+    payload: Record<string, unknown>
+    occurredAt: number
+    startAt?: number
+    endAt?: number
+  } | null {
     const nextPayload: Record<string, unknown> = { ...editPayloadBase }
+    const defaultOccurredAt = parseDateTimeToMs(editDate, editTime)
 
     if (eventType === 'feeding') {
-      const volume = Number(editFeedingVolume)
-      if (!Number.isFinite(volume) || volume <= 0) {
-        Taro.showToast({ title: '请输入有效喂养毫升数', icon: 'none' })
+      const startAt = parseDateTimeToMs(editFeedingStartDate, editFeedingStartTime)
+      const rawEndAt = parseDateTimeToMs(editDate, editTime)
+      const endAt = normalizeEndAt(startAt, rawEndAt)
+      if (endAt <= startAt) {
+        Taro.showToast({ title: '喂养结束时间必须晚于开始时间', icon: 'none' })
         return null
       }
-      nextPayload.volume = volume
-      nextPayload.mode = editFeedingMode || 'bottle'
-      if (!nextPayload.unit) {
+
+      if (isBottleFeedingType(editFeedingType)) {
+        const volume = Number(editFeedingVolume)
+        if (!Number.isFinite(volume) || volume <= 0) {
+          Taro.showToast({ title: '请输入有效喂养毫升数', icon: 'none' })
+          return null
+        }
+        nextPayload.volume = volume
         nextPayload.unit = 'ml'
+      } else {
+        delete nextPayload.volume
+        delete nextPayload.unit
       }
-      return nextPayload
+      nextPayload.feeding_type = editFeedingType
+      nextPayload.mode = editFeedingType
+      nextPayload.duration_minutes = Math.max(1, Math.round((endAt - startAt) / MINUTE_MS))
+      return { payload: nextPayload, occurredAt: endAt, startAt, endAt }
     }
 
     if (eventType === 'excretion') {
       nextPayload.excretion_type = editExcretionType || 'unknown'
-      return nextPayload
+      return { payload: nextPayload, occurredAt: defaultOccurredAt }
     }
 
     if (eventType === 'sleep') {
@@ -217,7 +295,7 @@ export default function RecordsPage() {
         return null
       }
       nextPayload.duration_minutes = duration
-      return nextPayload
+      return { payload: nextPayload, occurredAt: defaultOccurredAt }
     }
 
     if (eventType === 'measurement') {
@@ -249,7 +327,7 @@ export default function RecordsPage() {
       } else {
         delete nextPayload.temperature_c
       }
-      return nextPayload
+      return { payload: nextPayload, occurredAt: defaultOccurredAt }
     }
 
     if (eventType === 'medication') {
@@ -264,7 +342,7 @@ export default function RecordsPage() {
       } else {
         delete nextPayload.dosage
       }
-      return nextPayload
+      return { payload: nextPayload, occurredAt: defaultOccurredAt }
     }
 
     if (eventType === 'vaccine') {
@@ -274,7 +352,7 @@ export default function RecordsPage() {
         return null
       }
       nextPayload.vaccine_name = vaccineName
-      return nextPayload
+      return { payload: nextPayload, occurredAt: defaultOccurredAt }
     }
 
     if (eventType === 'milestone') {
@@ -284,10 +362,10 @@ export default function RecordsPage() {
         return null
       }
       nextPayload.milestone = milestoneText
-      return nextPayload
+      return { payload: nextPayload, occurredAt: defaultOccurredAt }
     }
 
-    return nextPayload
+    return { payload: nextPayload, occurredAt: defaultOccurredAt }
   }
 
   async function handleEditSave(eventId: string, eventType: EventType): Promise<void> {
@@ -296,17 +374,19 @@ export default function RecordsPage() {
       return
     }
 
-    const nextPayload = buildEditedPayload(eventType)
-    if (!nextPayload) {
+    const edited = buildEditedPayload(eventType)
+    if (!edited) {
       return
     }
 
     setIsEditingLoading(true)
     try {
       await updateEvent(session, eventId, {
-        occurredAt: parseDateTimeToMs(editDate, editTime),
+        occurredAt: edited.occurredAt,
+        startAt: edited.startAt,
+        endAt: edited.endAt,
         notes: editNotes.trim() || undefined,
-        payload: nextPayload
+        payload: edited.payload
       })
       Taro.showToast({ title: '事件已更新', icon: 'success' })
       resetEditForm()
@@ -322,26 +402,57 @@ export default function RecordsPage() {
     if (eventType === 'feeding') {
       return (
         <View>
-          <Text className='form-label'>喂养毫升数</Text>
-          <Input
-            className='input'
-            type='number'
-            value={editFeedingVolume}
-            onInput={(evt) => setEditFeedingVolume(evt.detail.value)}
-            placeholder='例如 90'
-          />
-          <Text className='form-label'>喂养方式</Text>
+          <Text className='form-label'>喂养类型</Text>
           <View className='pill-row'>
-            {FEEDING_MODE_OPTIONS.map((item) => (
+            {FEEDING_TYPE_OPTIONS.map((item) => (
               <View
                 key={item.value}
-                className={`pill ${editFeedingMode === item.value ? 'active' : ''}`}
-                onClick={() => setEditFeedingMode(item.value)}
+                className={`pill ${editFeedingType === item.value ? 'active' : ''}`}
+                onClick={() => setEditFeedingType(item.value)}
               >
                 <Text>{item.label}</Text>
               </View>
             ))}
           </View>
+
+          {isBottleFeedingType(editFeedingType) ? (
+            <View>
+              <Text className='form-label'>喂养毫升数</Text>
+              <Input
+                className='input'
+                type='number'
+                value={editFeedingVolume}
+                onInput={(evt) => setEditFeedingVolume(evt.detail.value)}
+                placeholder='例如 90'
+              />
+            </View>
+          ) : null}
+
+          <Text className='form-label'>开始日期</Text>
+          <Picker mode='date' value={editFeedingStartDate} onChange={(evt) => setEditFeedingStartDate(evt.detail.value)}>
+            <View className='input picker-like'>{editFeedingStartDate}</View>
+          </Picker>
+
+          <Text className='form-label'>开始时间</Text>
+          <Picker mode='time' value={editFeedingStartTime} onChange={(evt) => setEditFeedingStartTime(evt.detail.value)}>
+            <View className='input picker-like'>{editFeedingStartTime}</View>
+          </Picker>
+
+          <Text className='muted'>
+            当前时长：
+            {Math.max(
+              1,
+              Math.round(
+                (normalizeEndAt(
+                  parseDateTimeToMs(editFeedingStartDate, editFeedingStartTime),
+                  parseDateTimeToMs(editDate, editTime)
+                ) -
+                  parseDateTimeToMs(editFeedingStartDate, editFeedingStartTime)) /
+                  MINUTE_MS
+              )
+            )}{' '}
+            分钟
+          </Text>
         </View>
       )
     }
@@ -351,7 +462,7 @@ export default function RecordsPage() {
         <View>
           <Text className='form-label'>排泄类型</Text>
           <View className='pill-row'>
-            {['urine', 'stool', 'mixed', 'unknown'].map((item) => (
+            {['urine', 'stool', 'unknown', ...(editExcretionType === 'mixed' ? ['mixed'] : [])].map((item) => (
               <View
                 key={item}
                 className={`pill ${editExcretionType === item ? 'active' : ''}`}
@@ -548,12 +659,12 @@ export default function RecordsPage() {
 
               {isEditingThis ? (
                 <View className='edit-panel'>
-                  <Text className='form-label'>发生日期</Text>
+                  <Text className='form-label'>{event.event_type === 'feeding' ? '结束日期' : '发生日期'}</Text>
                   <Picker mode='date' value={editDate} onChange={(evt) => setEditDate(evt.detail.value)}>
                     <View className='input picker-like'>{editDate}</View>
                   </Picker>
 
-                  <Text className='form-label'>发生时间</Text>
+                  <Text className='form-label'>{event.event_type === 'feeding' ? '结束时间' : '发生时间'}</Text>
                   <Picker mode='time' value={editTime} onChange={(evt) => setEditTime(evt.detail.value)}>
                     <View className='input picker-like'>{editTime}</View>
                   </Picker>

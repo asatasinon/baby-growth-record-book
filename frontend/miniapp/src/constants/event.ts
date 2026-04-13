@@ -37,6 +37,38 @@ export const EXCRETION_LABEL_MAP: Record<string, string> = {
   unknown: '未标注'
 }
 
+export const FEEDING_TYPE_OPTIONS = [
+  { value: 'formula_bottle', label: '配方奶瓶喂' },
+  { value: 'breast_bottle', label: '母乳瓶喂' },
+  { value: 'breast_direct', label: '母乳亲喂' }
+] as const
+
+export type FeedingTypeValue = (typeof FEEDING_TYPE_OPTIONS)[number]['value']
+
+export const FEEDING_TYPE_LABEL_MAP: Record<FeedingTypeValue, string> = {
+  formula_bottle: '配方奶瓶喂',
+  breast_bottle: '母乳瓶喂',
+  breast_direct: '母乳亲喂'
+}
+
+export const FEEDING_TYPE_COLOR_MAP: Record<FeedingTypeValue, string> = {
+  formula_bottle: '#0f6bd8',
+  breast_bottle: '#26c1b4',
+  breast_direct: '#ff815f'
+}
+
+export const EXCRETION_TYPE_OPTIONS = [
+  { value: 'urine', label: '小便' },
+  { value: 'stool', label: '大便' }
+] as const
+
+export type ExcretionTypeValue = (typeof EXCRETION_TYPE_OPTIONS)[number]['value']
+
+export const EXCRETION_TYPE_COLOR_MAP: Record<ExcretionTypeValue, string> = {
+  urine: '#0eae79',
+  stool: '#f59f2f'
+}
+
 export const EVENT_TYPE_COLOR_MAP: Record<EventType, string> = {
   feeding: '#0e8fd1',
   excretion: '#0eae79',

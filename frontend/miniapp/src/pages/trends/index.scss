@@ -59,6 +59,31 @@
     border: 1rpx solid #d0e2f5;
   }
 
+  .legend-row {
+    margin-bottom: 12rpx;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10rpx 16rpx;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+    font-size: 22rpx;
+    color: #496584;
+  }
+
+  .legend-dot {
+    width: 12rpx;
+    height: 12rpx;
+    border-radius: 50%;
+  }
+
+  .legend-text {
+    line-height: 1.2;
+  }
+
   .chart-canvas-wrapper {
     position: relative;
   }
@@ -66,8 +91,8 @@
   .point-tooltip {
     position: absolute;
     z-index: 2;
-    min-width: 164px;
-    max-width: 200px;
+    min-width: 196px;
+    max-width: 220px;
     padding: 8px 10px;
     border-radius: 10px;
     background: rgba(21, 54, 88, 0.92);
@@ -80,26 +105,35 @@
     display: block;
     font-size: 11px;
     opacity: 0.92;
+    margin-bottom: 4px;
+  }
+
+  .point-tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .point-tooltip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .point-tooltip-label {
+    min-width: 64px;
+    font-size: 11px;
+    opacity: 0.92;
+    flex-shrink: 0;
   }
 
   .point-tooltip-value {
     display: block;
-    margin-top: 2px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
-  }
-
-  .point-marker {
-    position: absolute;
-    z-index: 2;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    background: #0f6bd8;
-    box-shadow: 0 0 0 3px rgba(15, 107, 216, 0.25);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
+    line-height: 1.2;
   }
 
   .fallback-list {

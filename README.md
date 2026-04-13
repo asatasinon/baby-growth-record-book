@@ -28,6 +28,7 @@ pnpm dev:admin     # 管理后台
 
 ```bash
 pnpm setup:python   # 安装 backend + worker 的 uv 依赖（含 dev）
+pnpm db:create      # 若数据库不存在则自动创建（按 backend/.env 的 DB_NAME）
 pnpm db:init        # 重置 schema，加载 S02 基线并执行 Alembic upgrade（开发环境）
 pnpm db:upgrade     # 执行 Alembic 迁移到最新版本（head）
 pnpm db:seed        # 导入本地联调用测试数据（docs/specs/S03-test-seed.sql）
@@ -41,6 +42,7 @@ pnpm lint           # backend/worker lint + frontend build 校验
 > `pnpm db:init` 会清空数据库 `public` schema，仅用于本地开发与联调环境。
 > `db:*` 脚本不会使用 `docker compose` 操作数据库，请先确保目标数据库可连通（本地/云上/容器/虚拟机均可）。
 > `db:*` 默认读取 `backend/.env` 中的 `DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD`。
+> 如需显式先建库，可执行 `pnpm db:create`；`pnpm db:init` 也会自动尝试建库。
 > `pnpm db:upgrade` 使用 Alembic 管理增量迁移到最新版本（head）。
 
 ## 后端（uv）

@@ -6,6 +6,7 @@
     "setup:backend": "cd backend && uv sync --extra dev",
     "setup:worker": "cd worker && uv sync --extra dev",
     "setup:python": "pnpm setup:backend && pnpm setup:worker",
+    "db:create": "cd backend && uv run python scripts/db_admin.py create",
     "db:upgrade": "cd backend && uv run alembic -c alembic.ini upgrade head",
     "db:init": "cd backend && uv run python scripts/db_admin.py init && uv run alembic -c alembic.ini upgrade head",
     "db:seed": "cd backend && uv run python scripts/db_admin.py seed",

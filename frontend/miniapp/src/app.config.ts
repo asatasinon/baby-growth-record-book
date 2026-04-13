@@ -2,6 +2,7 @@ export default defineAppConfig({
   pages: [
     'pages/home/index',
     'pages/quick-record/index',
+    'pages/update-record/index',
     'pages/records/index',
     'pages/trends/index',
     'pages/ai/index',

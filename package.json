@@ -35,5 +35,8 @@
     "lint:worker": "cd worker && uv run ruff check app",
     "lint:frontend": "pnpm --filter @baby-growth/admin build && pnpm --filter @baby-growth/miniapp build:h5",
     "lint": "pnpm lint:backend && pnpm lint:worker && pnpm lint:frontend"
+  },
+  "devDependencies": {
+    "pm2": "^6.0.14"
   }
 }

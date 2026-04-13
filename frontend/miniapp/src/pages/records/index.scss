@@ -1,4 +1,21 @@
 .records-page {
+  .entry-row {
+    margin-top: 10rpx;
+    margin-bottom: 10rpx;
+  }
+
+  .entry-btn {
+    width: 100%;
+    min-height: 70rpx;
+    margin: 0;
+    border-radius: 14rpx;
+    border: 1rpx solid #c6daf0;
+    background: rgba(255, 255, 255, 0.9);
+    color: #30577c;
+    font-size: 25rpx;
+    font-weight: 600;
+  }
+
   .pill-row {
     margin-top: 8rpx;
   }
@@ -50,15 +67,41 @@
     gap: 10rpx;
   }
 
-  .event-actions button {
-    min-width: 124rpx;
-    min-height: 66rpx;
-    margin: 0;
+  .icon-action {
+    width: 70rpx;
+    height: 56rpx;
     border-radius: 14rpx;
     border: 1rpx solid #c4daf0;
-    background: rgba(255, 255, 255, 0.9);
-    color: #355a7f;
-    font-size: 24rpx;
+    background: rgba(255, 255, 255, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-action.danger {
+    border-color: #f3c2c4;
+    background: rgba(255, 245, 246, 0.94);
+  }
+
+  .icon-action.disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  .icon-glyph {
+    width: 26rpx;
+    height: 26rpx;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+
+  .icon-glyph-edit {
+    background-image: url('../../assets/icons/actions/edit.svg');
+  }
+
+  .icon-glyph-delete {
+    background-image: url('../../assets/icons/actions/delete.svg');
   }
 
   .edit-panel {
@@ -67,24 +110,75 @@
     border-top: 1rpx dashed #c8dbef;
   }
 
+  .edit-panel .form-label {
+    margin-top: 12rpx;
+  }
+
+  .edit-panel .form-label:first-child {
+    margin-top: 0;
+  }
+
   .picker-like {
     line-height: 1.6;
     color: var(--text-main);
   }
 
-  .payload-textarea {
-    min-height: 180rpx;
-    line-height: 1.5;
-  }
-
   .edit-actions {
-    margin-top: 16rpx;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10rpx;
+    margin-top: 18rpx;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12rpx;
   }
 
-  .edit-actions button {
-    min-width: 120rpx;
+  .edit-btn {
+    width: 100%;
+    min-height: 72rpx;
+    margin: 0;
+    padding: 0;
+    border-radius: 14rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26rpx;
+    font-weight: 600;
+  }
+
+  .edit-btn::after {
+    border: none;
+  }
+
+  .cancel-btn {
+    border: 1rpx solid #cadff2;
+    background: rgba(255, 255, 255, 0.94);
+    color: #36597b;
+    box-shadow: none;
+  }
+
+  .cancel-btn::before {
+    content: '';
+    width: 20rpx;
+    height: 20rpx;
+    margin-right: 8rpx;
+    background-image: url('../../assets/icons/actions/close.svg');
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+
+  .save-btn {
+    border: none;
+    color: #fff;
+    background: linear-gradient(132deg, var(--brand), var(--brand-2));
+  }
+
+  .save-btn::before {
+    content: '';
+    width: 20rpx;
+    height: 20rpx;
+    margin-right: 8rpx;
+    background-image: url('../../assets/icons/actions/check.svg');
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
   }
 }

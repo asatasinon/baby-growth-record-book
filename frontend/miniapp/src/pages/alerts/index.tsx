@@ -55,6 +55,7 @@ function resolveContext():
 }
 
 export default function AlertsPage() {
+  const isWeb = Taro.getEnv() === Taro.ENV_TYPE.WEB
   const [alerts, setAlerts] = useState<AlertEvent[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [ackingId, setAckingId] = useState('')
@@ -169,6 +170,15 @@ export default function AlertsPage() {
     }
   }, [alerts])
 
+  function navigateBackOrHome(): void {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      void Taro.navigateBack({ delta: 1 })
+      return
+    }
+    void Taro.switchTab({ url: '/pages/home/index' })
+  }
+
   if (!resolveContext()) {
     return (
       <View className='page-shell alerts-page'>
@@ -184,6 +194,17 @@ export default function AlertsPage() {
 
   return (
     <View className='page-shell alerts-page'>
+      {isWeb ? (
+        <View className='card subpage-nav'>
+          <View className='subpage-back-btn' onClick={navigateBackOrHome}>
+            <View className='subpage-back-icon' />
+            <Text>返回</Text>
+          </View>
+          <Text className='subpage-nav-title'>提醒中心</Text>
+          <View />
+        </View>
+      ) : null}
+
       <Text className='section-title'>新建提醒规则</Text>
       <View className='card create-rule-card'>
         <View className='form-item'>
@@ -294,7 +315,7 @@ export default function AlertsPage() {
             <Text className='alert-content'>{item.content}</Text>
             {item.status === 'open' ? (
               <View className='action-row'>
-                <Button size='mini' loading={ackingId === item.id} onClick={() => void handleAck(item.id)}>
+                <Button className='action-btn' loading={ackingId === item.id} onClick={() => void handleAck(item.id)}>
                   标记已确认
                 </Button>
               </View>

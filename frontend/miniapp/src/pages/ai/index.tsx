@@ -86,6 +86,7 @@ export default function AiPage() {
         <Button className='btn-primary' loading={isLoading} onClick={() => void submitQuery()}>
           立即分析
         </Button>
+        <Text className='ask-tip'>基于当前宝宝记录智能分析，建议问题尽量具体。</Text>
       </View>
 
       <Text className='section-title'>推荐问题</Text>
@@ -113,11 +114,7 @@ export default function AiPage() {
           </Text>
           <Text className='disclaimer'>{result.disclaimer}</Text>
         </View>
-      ) : (
-        <View className='card empty-card'>
-          <Text className='muted'>提交问题后，会基于记录数据返回结构化结论。</Text>
-        </View>
-      )}
+      ) : null}
     </View>
   )
 }

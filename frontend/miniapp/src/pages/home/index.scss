@@ -68,54 +68,52 @@
     letter-spacing: 0.5rpx;
   }
 
-  .quick-form-card {
-    margin-top: 16rpx;
-    padding: 26rpx;
-    border-radius: 30rpx;
-  }
-
-  .period-card {
-    margin-top: 14rpx;
-    padding: 24rpx;
-  }
-
-  .alerts-card {
+  .action-card {
     margin-top: 12rpx;
-    padding: 22rpx;
+    padding: 20rpx;
   }
 
-  .quick-nav-row {
-    margin-top: 20rpx;
+  .action-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12rpx;
+    gap: 14rpx;
   }
 
-  .quick-nav-row button {
+  .action-btn {
+    min-height: 176rpx;
     margin: 0;
-    min-height: 74rpx;
-    border-radius: 16rpx;
-    border: 1rpx solid #c6dbf2;
-    background: rgba(255, 255, 255, 0.9);
-    color: #30577c;
-    font-size: 26rpx;
+    width: 100%;
+    padding: 20rpx 18rpx;
+    border-radius: 18rpx;
+    border: 1rpx solid #c9def3;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255, 129, 95, 0.12), transparent 34%),
+      rgba(255, 255, 255, 0.94);
+    box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.82);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    text-align: left;
+    line-height: 1.35;
   }
 
-  .alert-item {
-    padding: 14rpx 0;
-    border-bottom: 1rpx dashed #d2e2f2;
+  .action-btn::after {
+    border: none;
   }
 
-  .alert-item:last-child {
-    border-bottom: none;
-  }
-
-  .alert-title {
+  .action-title {
     display: block;
-    margin-bottom: 6rpx;
-    font-size: 27rpx;
-    font-weight: 600;
+    margin-bottom: 8rpx;
+    font-size: 30rpx;
+    font-weight: 700;
     color: var(--ink-strong);
+  }
+
+  .action-desc {
+    display: block;
+    color: #4d6480;
+    font-size: 22rpx;
   }
 
   .empty-title {

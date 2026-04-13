@@ -45,6 +45,7 @@ function resolveContext():
 }
 
 export default function ReportsPage() {
+  const isWeb = Taro.getEnv() === Taro.ENV_TYPE.WEB
   const [tasks, setTasks] = useState<ExportTask[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
@@ -170,6 +171,15 @@ export default function ReportsPage() {
     }
   }
 
+  function navigateBackOrHome(): void {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      void Taro.navigateBack({ delta: 1 })
+      return
+    }
+    void Taro.switchTab({ url: '/pages/home/index' })
+  }
+
   if (!resolveContext()) {
     return (
       <View className='page-shell reports-page'>
@@ -185,6 +195,17 @@ export default function ReportsPage() {
 
   return (
     <View className='page-shell reports-page'>
+      {isWeb ? (
+        <View className='card subpage-nav'>
+          <View className='subpage-back-btn' onClick={navigateBackOrHome}>
+            <View className='subpage-back-icon' />
+            <Text>返回</Text>
+          </View>
+          <Text className='subpage-nav-title'>报告中心</Text>
+          <View />
+        </View>
+      ) : null}
+
       <Text className='section-title'>发起导出</Text>
       <View className='card create-card'>
         <View className='form-item report-type-row'>
@@ -241,17 +262,17 @@ export default function ReportsPage() {
               </Text>
               {task.download_url ? (
                 <View className='task-actions'>
-                  <Button size='mini' onClick={() => void handleOpenLink(task.download_url || '')}>
+                  <Button className='task-action-btn' onClick={() => void handleOpenLink(task.download_url || '')}>
                     打开下载
                   </Button>
-                  <Button size='mini' onClick={() => void handleCopyLink(task.download_url || '')}>
+                  <Button className='task-action-btn' onClick={() => void handleCopyLink(task.download_url || '')}>
                     复制下载链接
                   </Button>
                 </View>
               ) : (
                 <View className='task-actions'>
                   <Button
-                    size='mini'
+                    className='task-action-btn'
                     loading={checkingTaskId === task.id}
                     onClick={() => void handleRefreshTask(task.id)}
                   >

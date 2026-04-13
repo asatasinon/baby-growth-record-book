@@ -1,0 +1,31 @@
+.quick-record-page {
+  .section-title:first-of-type {
+    margin-top: 10rpx;
+  }
+
+  .record-card {
+    margin-top: 12rpx;
+    padding: 24rpx;
+  }
+
+  .type-row {
+    margin-bottom: 14rpx;
+  }
+
+  .helper-actions {
+    margin-top: 12rpx;
+    display: flex;
+    gap: 12rpx;
+  }
+
+  .link-btn {
+    width: 100%;
+    min-height: 70rpx;
+    margin: 0;
+    border-radius: 14rpx;
+    border: 1rpx solid #c6daf0;
+    background: rgba(255, 255, 255, 0.9);
+    color: #355978;
+    font-size: 25rpx;
+  }
+}

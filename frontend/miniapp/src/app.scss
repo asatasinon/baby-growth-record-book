@@ -93,6 +93,44 @@ page {
   background: linear-gradient(180deg, var(--brand), var(--accent));
 }
 
+.subpage-nav {
+  margin-bottom: 18rpx;
+  padding: 14rpx 16rpx;
+  display: grid;
+  grid-template-columns: 140rpx 1fr 140rpx;
+  align-items: center;
+}
+
+.subpage-back-btn {
+  height: 62rpx;
+  border-radius: 14rpx;
+  border: 1rpx solid #c8dbef;
+  background: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #355979;
+  font-size: 25rpx;
+  font-weight: 600;
+}
+
+.subpage-back-icon {
+  width: 20rpx;
+  height: 20rpx;
+  margin-right: 6rpx;
+  background-image: url('./assets/icons/actions/chevron-left.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.subpage-nav-title {
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
 .card {
   border: 1rpx solid var(--card-border);
   border-radius: 26rpx;
@@ -175,10 +213,16 @@ page {
 
 .btn-primary {
   margin-top: 14rpx;
+  min-height: 82rpx;
+  padding: 0 24rpx;
   border: none;
   border-radius: 999rpx;
   background: linear-gradient(132deg, var(--brand), var(--brand-2));
   color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
   font-weight: 700;
   font-size: 32rpx;
   letter-spacing: 1rpx;
@@ -191,8 +235,13 @@ page {
 
 button {
   border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
   font-size: 26rpx;
   color: var(--ink-main);
+  box-sizing: border-box;
 }
 
 button::after {

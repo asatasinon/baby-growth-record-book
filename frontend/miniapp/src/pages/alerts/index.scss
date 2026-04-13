@@ -1,4 +1,8 @@
 .alerts-page {
+  .section-title:first-of-type {
+    margin-top: 10rpx;
+  }
+
   .create-rule-card {
     margin-top: 12rpx;
     margin-bottom: 16rpx;
@@ -101,5 +105,22 @@
     margin-top: 14rpx;
     display: flex;
     justify-content: flex-end;
+  }
+
+  .action-btn {
+    min-height: 66rpx;
+    min-width: 170rpx;
+    margin: 0;
+    padding: 0 20rpx;
+    border-radius: 14rpx;
+    border: 1rpx solid #c4daf0;
+    background: rgba(255, 255, 255, 0.92);
+    color: #355a7f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    font-size: 24rpx;
+    box-shadow: none;
   }
 }

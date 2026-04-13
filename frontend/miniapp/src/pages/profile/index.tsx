@@ -32,6 +32,15 @@ const inviteRoleOptions: Array<{ value: FamilyMemberRole; label: string }> = [
   { value: 'owner', label: '管理员' }
 ]
 
+const timezoneOptions = [
+  'Asia/Shanghai',
+  'Asia/Hong_Kong',
+  'Asia/Singapore',
+  'America/Los_Angeles',
+  'America/New_York',
+  'Europe/London'
+]
+
 function parsePositiveNumber(text: string): number | undefined {
   if (!text.trim()) {
     return undefined
@@ -54,6 +63,23 @@ function getRoleLabel(role: string): string {
     return '管理员'
   }
   return '未设置'
+}
+
+function getGenderLabel(gender: BabyInfo['gender']): string {
+  if (gender === 'male') {
+    return '男'
+  }
+  if (gender === 'female') {
+    return '女'
+  }
+  return '未知'
+}
+
+function formatOptionalNumber(value: number | null, unit: string): string {
+  if (value === null || Number.isNaN(value)) {
+    return '未设置'
+  }
+  return `${value}${unit}`
 }
 
 export default function ProfilePage() {
@@ -86,8 +112,9 @@ export default function ProfilePage() {
   const [editWeight, setEditWeight] = useState('')
   const [editHeight, setEditHeight] = useState('')
   const [editHeadCircumference, setEditHeadCircumference] = useState('')
-  const [isFamilyManageOpen, setIsFamilyManageOpen] = useState(false)
-  const [isBabyManageOpen, setIsBabyManageOpen] = useState(false)
+  const [activeManageTab, setActiveManageTab] = useState<'family' | 'baby' | ''>('')
+  const [familySubTab, setFamilySubTab] = useState<'create' | 'invite'>('create')
+  const [babySubTab, setBabySubTab] = useState<'create' | 'update'>('create')
 
   const activeBaby = useMemo(
     () => babies.find((item) => item.id === activeBabyId) || null,
@@ -121,7 +148,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (session && !isBabyLoading && babies.length === 0) {
-      setIsBabyManageOpen(true)
+      setActiveManageTab('baby')
+      setBabySubTab('create')
     }
   }, [session, isBabyLoading, babies.length])
 
@@ -262,6 +290,7 @@ export default function ProfilePage() {
       }
       setNewFamilyName('')
       await applySession(nextSession, created.id)
+      setActiveManageTab('')
       Taro.showToast({ title: '家庭创建成功', icon: 'success' })
     } catch (error) {
       Taro.showToast({ title: (error as Error).message || '创建家庭失败', icon: 'none' })
@@ -331,6 +360,7 @@ export default function ProfilePage() {
       await loadBabies(session, activeFamilyId)
       setActiveBabyId(created.id)
       setActiveBabyIdState(created.id)
+      setActiveManageTab('')
       Taro.showToast({ title: '宝宝创建成功', icon: 'success' })
     } catch (error) {
       Taro.showToast({ title: (error as Error).message || '创建宝宝失败', icon: 'none' })
@@ -371,6 +401,7 @@ export default function ProfilePage() {
         birthHeadCircumferenceCm: head
       })
       await loadBabies(session, activeFamilyId)
+      setActiveManageTab('')
       Taro.showToast({ title: '宝宝档案已更新', icon: 'success' })
     } catch (error) {
       Taro.showToast({ title: (error as Error).message || '更新失败', icon: 'none' })
@@ -385,8 +416,9 @@ export default function ProfilePage() {
     setBabies([])
     setActiveFamilyIdState('')
     setActiveBabyIdState('')
-    setIsFamilyManageOpen(false)
-    setIsBabyManageOpen(false)
+    setActiveManageTab('')
+    setFamilySubTab('create')
+    setBabySubTab('create')
     Taro.showToast({ title: '已退出登录', icon: 'success' })
   }
 
@@ -429,11 +461,8 @@ export default function ProfilePage() {
         <View className='profile-content'>
           <View className='card user-card'>
             <View className='h-stack user-header'>
-              <View>
-                <Text className='user-name'>{session.user.display_name}</Text>
-                <Text className='muted'>用户 ID：{session.user.id}</Text>
-              </View>
-              <Button size='mini' plain onClick={handleLogout}>
+              <Text className='user-name'>{session.user.display_name}</Text>
+              <Button className='logout-btn' size='mini' plain onClick={handleLogout}>
                 退出登录
               </Button>
             </View>
@@ -496,53 +525,127 @@ export default function ProfilePage() {
               {!isBabyLoading && babies.length === 0 ? (
                 <View className='empty-inline'>
                   <Text className='muted'>当前家庭还没有宝宝档案</Text>
-                  <Button size='mini' plain onClick={() => setIsBabyManageOpen(true)}>
+                  <Button
+                    size='mini'
+                    plain
+                    onClick={() => {
+                      setActiveManageTab('baby')
+                      setBabySubTab('create')
+                    }}
+                  >
                     去创建
                   </Button>
                 </View>
               ) : null}
             </View>
-          </View>
 
-          <View className='manage-header'>
-            <Text className='section-title'>高级管理</Text>
-            <Text className='section-caption'>低频操作已折叠，按需展开</Text>
-          </View>
-
-          <View className='card collapse-card'>
-            <View className='collapse-head' onClick={() => setIsFamilyManageOpen((prev) => !prev)}>
-              <Text className='collapse-title'>家庭管理</Text>
-              <Text className='collapse-action'>{isFamilyManageOpen ? '收起' : '展开'}</Text>
-            </View>
-            {isFamilyManageOpen ? (
-              <View className='collapse-body'>
-                <View className='manage-block'>
-                  <Text className='form-title'>创建家庭</Text>
-                  <View className='form-item'>
-                    <Text className='form-label'>家庭名称</Text>
-                    <Input
-                      className='input'
-                      value={newFamilyName}
-                      onInput={(event) => setNewFamilyName(event.detail.value)}
-                      placeholder='例如 张家'
-                    />
+            {activeBaby ? (
+              <View className='baby-brief'>
+                <Text className='baby-brief-title'>宝宝基础信息</Text>
+                <View className='brief-grid'>
+                  <View className='brief-item'>
+                    <Text className='brief-label'>姓名</Text>
+                    <Text className='brief-value'>{activeBaby.name}</Text>
                   </View>
-                  <View className='form-item'>
-                    <Text className='form-label'>时区</Text>
-                    <Input
-                      className='input'
-                      value={newFamilyTimezone}
-                      onInput={(event) => setNewFamilyTimezone(event.detail.value)}
-                      placeholder='Asia/Shanghai'
-                    />
+                  <View className='brief-item'>
+                    <Text className='brief-label'>昵称</Text>
+                    <Text className='brief-value'>{activeBaby.nickname || '未设置'}</Text>
                   </View>
-                  <Button className='btn-primary' loading={isFamilyLoading} onClick={() => void handleCreateFamily()}>
-                    创建并切换家庭
-                  </Button>
+                  <View className='brief-item'>
+                    <Text className='brief-label'>性别</Text>
+                    <Text className='brief-value'>{getGenderLabel(activeBaby.gender)}</Text>
+                  </View>
+                  <View className='brief-item'>
+                    <Text className='brief-label'>出生日期</Text>
+                    <Text className='brief-value'>{formatDate(activeBaby.birth_date)}</Text>
+                  </View>
+                  <View className='brief-item'>
+                    <Text className='brief-label'>出生体重</Text>
+                    <Text className='brief-value'>{formatOptionalNumber(activeBaby.birth_weight_g, 'g')}</Text>
+                  </View>
+                  <View className='brief-item'>
+                    <Text className='brief-label'>出生身高</Text>
+                    <Text className='brief-value'>{formatOptionalNumber(activeBaby.birth_height_cm, 'cm')}</Text>
+                  </View>
                 </View>
-                {activeFamilyRole === 'owner' ? (
+              </View>
+            ) : null}
+          </View>
+
+          <View className='card manage-panel'>
+            <Text className='form-title'>管理功能</Text>
+            <View className='manage-tab-row'>
+              <View
+                className={`manage-tab ${activeManageTab === 'family' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveManageTab((prev) => (prev === 'family' ? '' : 'family'))
+                  setFamilySubTab('create')
+                }}
+              >
+                <Text>家庭管理</Text>
+              </View>
+              <View
+                className={`manage-tab ${activeManageTab === 'baby' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveManageTab((prev) => (prev === 'baby' ? '' : 'baby'))
+                  setBabySubTab('create')
+                }}
+              >
+                <Text>宝宝档案管理</Text>
+              </View>
+            </View>
+            {activeManageTab === '' ? <Text className='muted manage-placeholder'>点击上方 Tab 展开管理功能。</Text> : null}
+
+            {activeManageTab === 'family' ? (
+              <View className='manage-tab-body'>
+                <View className='subtab-row'>
+                  <View
+                    className={`subtab ${familySubTab === 'create' ? 'active' : ''}`}
+                    onClick={() => setFamilySubTab('create')}
+                  >
+                    <Text>创建家庭</Text>
+                  </View>
+                  <View
+                    className={`subtab ${familySubTab === 'invite' ? 'active' : ''}`}
+                    onClick={() => setFamilySubTab('invite')}
+                  >
+                    <Text>邀请成员</Text>
+                  </View>
+                </View>
+
+                {familySubTab === 'create' ? (
                   <View className='manage-block'>
-                    <Text className='form-title'>邀请成员</Text>
+                    <View className='form-item'>
+                      <Text className='form-label'>家庭名称</Text>
+                      <Input
+                        className='input'
+                        value={newFamilyName}
+                        onInput={(event) => setNewFamilyName(event.detail.value)}
+                        placeholder='例如 张家'
+                      />
+                    </View>
+                    <View className='form-item'>
+                      <Text className='form-label'>时区</Text>
+                      <Picker
+                        mode='selector'
+                        range={timezoneOptions}
+                        value={Math.max(0, timezoneOptions.indexOf(newFamilyTimezone))}
+                        onChange={(event) => {
+                          const index = Number(event.detail.value)
+                          setNewFamilyTimezone(timezoneOptions[index] || 'Asia/Shanghai')
+                        }}
+                      >
+                        <View className='input picker-like'>{newFamilyTimezone}</View>
+                      </Picker>
+                    </View>
+                    <Button className='btn-primary' loading={isFamilyLoading} onClick={() => void handleCreateFamily()}>
+                      创建并切换家庭
+                    </Button>
+                  </View>
+                ) : null}
+
+                {familySubTab === 'invite' && activeFamilyRole === 'owner' ? (
+                  <View className='manage-block'>
                     <View className='form-item'>
                       <Text className='form-label'>成员手机号</Text>
                       <Input
@@ -568,68 +671,79 @@ export default function ProfilePage() {
                         ))}
                       </View>
                     </View>
-                    <Button plain loading={isInviteLoading} onClick={() => void handleInviteMember()}>
+                    <Button className='btn-primary' loading={isInviteLoading} onClick={() => void handleInviteMember()}>
                       发送邀请
                     </Button>
                   </View>
-                ) : (
+                ) : null}
+
+                {familySubTab === 'invite' && activeFamilyRole !== 'owner' ? (
                   <Text className='muted owner-hint'>仅管理员可邀请成员。</Text>
-                )}
+                ) : null}
               </View>
             ) : null}
-          </View>
 
-          <View className='card collapse-card'>
-            <View className='collapse-head' onClick={() => setIsBabyManageOpen((prev) => !prev)}>
-              <Text className='collapse-title'>宝宝档案管理</Text>
-              <Text className='collapse-action'>{isBabyManageOpen ? '收起' : '展开'}</Text>
-            </View>
-            {isBabyManageOpen ? (
-              <View className='collapse-body'>
-                <View className='manage-block'>
-                  <Text className='form-title'>创建宝宝</Text>
-                  <View className='form-item'>
-                    <Text className='form-label'>宝宝姓名</Text>
-                    <Input
-                      className='input'
-                      value={newBabyName}
-                      onInput={(event) => setNewBabyName(event.detail.value)}
-                      placeholder='例如 小麦'
-                    />
+            {activeManageTab === 'baby' ? (
+              <View className='manage-tab-body'>
+                <View className='subtab-row'>
+                  <View
+                    className={`subtab ${babySubTab === 'create' ? 'active' : ''}`}
+                    onClick={() => setBabySubTab('create')}
+                  >
+                    <Text>创建宝宝档案</Text>
                   </View>
-
-                  <View className='form-item'>
-                    <Text className='form-label'>出生日期</Text>
-                    <Picker
-                      mode='date'
-                      value={newBabyBirthDate}
-                      start='2010-01-01'
-                      end='2035-12-31'
-                      onChange={(event) => setNewBabyBirthDate(event.detail.value)}
-                    >
-                      <View className='input picker-like'>{newBabyBirthDate}</View>
-                    </Picker>
+                  <View
+                    className={`subtab ${babySubTab === 'update' ? 'active' : ''}`}
+                    onClick={() => setBabySubTab('update')}
+                  >
+                    <Text>更新宝宝档案</Text>
                   </View>
-
-                  <View className='form-item'>
-                    <Text className='form-label'>出生体重（g，可选）</Text>
-                    <Input
-                      className='input'
-                      value={newBabyWeight}
-                      type='number'
-                      onInput={(event) => setNewBabyWeight(event.detail.value)}
-                      placeholder='例如 3200'
-                    />
-                  </View>
-
-                  <Button className='btn-primary' loading={isBabyLoading} onClick={() => void handleCreateBaby()}>
-                    创建宝宝档案
-                  </Button>
                 </View>
 
-                {activeBaby ? (
+                {babySubTab === 'create' ? (
                   <View className='manage-block'>
-                    <Text className='form-title'>编辑宝宝档案</Text>
+                    <View className='form-item'>
+                      <Text className='form-label'>宝宝姓名</Text>
+                      <Input
+                        className='input'
+                        value={newBabyName}
+                        onInput={(event) => setNewBabyName(event.detail.value)}
+                        placeholder='例如 小麦'
+                      />
+                    </View>
+
+                    <View className='form-item'>
+                      <Text className='form-label'>出生日期</Text>
+                      <Picker
+                        mode='date'
+                        value={newBabyBirthDate}
+                        start='2010-01-01'
+                        end='2035-12-31'
+                        onChange={(event) => setNewBabyBirthDate(event.detail.value)}
+                      >
+                        <View className='input picker-like'>{newBabyBirthDate}</View>
+                      </Picker>
+                    </View>
+
+                    <View className='form-item'>
+                      <Text className='form-label'>出生体重（g，可选）</Text>
+                      <Input
+                        className='input'
+                        value={newBabyWeight}
+                        type='number'
+                        onInput={(event) => setNewBabyWeight(event.detail.value)}
+                        placeholder='例如 3200'
+                      />
+                    </View>
+
+                    <Button className='btn-primary' loading={isBabyLoading} onClick={() => void handleCreateBaby()}>
+                      创建宝宝档案
+                    </Button>
+                  </View>
+                ) : null}
+
+                {babySubTab === 'update' && activeBaby ? (
+                  <View className='manage-block'>
                     <View className='form-item'>
                       <Text className='form-label'>昵称</Text>
                       <Input
@@ -677,11 +791,13 @@ export default function ProfilePage() {
                       保存宝宝信息
                     </Button>
                   </View>
-                ) : (
+                ) : null}
+
+                {babySubTab === 'update' && !activeBaby ? (
                   <View className='manage-block'>
-                    <Text className='muted'>请选择宝宝后再编辑档案。</Text>
+                    <Text className='muted'>请选择宝宝后再更新档案。</Text>
                   </View>
-                )}
+                ) : null}
               </View>
             ) : null}
           </View>

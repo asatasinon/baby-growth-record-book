@@ -1,7 +1,8 @@
 .profile-page {
   .login-card,
   .user-card,
-  .quick-switch-card {
+  .quick-switch-card,
+  .manage-panel {
     padding: 26rpx;
   }
 
@@ -37,7 +38,7 @@
   }
 
   .user-header {
-    align-items: flex-start;
+    align-items: center;
     gap: 14rpx;
   }
 
@@ -46,6 +47,22 @@
     font-size: 34rpx;
     font-weight: 700;
     color: var(--ink-strong);
+  }
+
+  .logout-btn {
+    min-width: 150rpx;
+    min-height: 58rpx;
+    margin: 0;
+    border-radius: 999rpx;
+    font-size: 24rpx;
+    font-weight: 700;
+  }
+
+  .logout-btn[plain] {
+    margin-top: 0;
+    border: 1rpx solid #f0b4b8;
+    background: rgba(255, 245, 246, 0.95);
+    color: #bf4e58;
   }
 
   .meta-grid {
@@ -105,58 +122,127 @@
     border-radius: 999rpx;
   }
 
-  .manage-header .section-title {
-    margin: 12rpx 0 4rpx;
+  .baby-brief {
+    margin-top: 20rpx;
+    padding-top: 20rpx;
+    border-top: 1rpx dashed #cadff2;
   }
 
-  .section-caption {
+  .baby-brief-title {
     display: block;
-    margin-left: 20rpx;
-    font-size: 22rpx;
-    color: var(--text-sub);
+    margin-bottom: 12rpx;
+    font-size: 26rpx;
+    font-weight: 700;
+    color: #20527d;
   }
 
-  .collapse-card {
-    padding: 0;
+  .brief-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10rpx;
+  }
+
+  .brief-item {
+    padding: 12rpx 14rpx;
+    border-radius: 14rpx;
+    border: 1rpx solid #d5e7f8;
+    background: rgba(255, 255, 255, 0.86);
+  }
+
+  .brief-label {
+    display: block;
+    font-size: 21rpx;
+    color: var(--text-sub);
+    margin-bottom: 6rpx;
+  }
+
+  .brief-value {
+    display: block;
+    font-size: 24rpx;
+    font-weight: 700;
+    color: #1d4e79;
+    word-break: break-all;
+  }
+
+  .manage-panel {
     border-radius: 26rpx;
     background: linear-gradient(155deg, rgba(255, 255, 255, 0.95), rgba(244, 251, 255, 0.95));
   }
 
-  .collapse-head {
-    padding: 24rpx 26rpx;
+  .manage-tab-row {
+    margin-top: 8rpx;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12rpx;
+  }
+
+  .manage-tab {
+    min-height: 74rpx;
+    padding: 0 12rpx;
+    border-radius: 14rpx;
+    border: 1rpx solid #c8ddf1;
+    background: rgba(255, 255, 255, 0.88);
+    color: #3b6184;
+    font-size: 26rpx;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
   }
 
-  .collapse-title {
+  .manage-tab.active {
+    border-color: transparent;
+    color: #fff;
+    background: linear-gradient(132deg, var(--brand), var(--brand-2));
+    box-shadow: 0 10rpx 24rpx rgba(14, 143, 209, 0.22);
+  }
+
+  .manage-placeholder {
     display: block;
-    font-size: 30rpx;
-    font-weight: 700;
-    color: #1f547e;
+    margin-top: 16rpx;
+    font-size: 24rpx;
   }
 
-  .collapse-action {
-    display: inline-block;
-    padding: 6rpx 16rpx;
+  .manage-tab-body {
+    margin-top: 18rpx;
+    padding-top: 18rpx;
+    border-top: 1rpx dashed #cadef2;
+  }
+
+  .subtab-row {
+    display: flex;
+    gap: 12rpx;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 4rpx;
+  }
+
+  .subtab {
+    min-height: 58rpx;
+    padding: 0 20rpx;
     border-radius: 999rpx;
-    border: 1rpx solid #c8ddf1;
-    background: rgba(255, 255, 255, 0.9);
-    font-size: 22rpx;
-    color: #355e84;
+    border: 1rpx solid #c6dbf0;
+    background: rgba(255, 255, 255, 0.88);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #456486;
+    font-size: 24rpx;
+    font-weight: 600;
   }
 
-  .collapse-body {
-    padding: 0 26rpx 26rpx;
-    border-top: 1rpx solid #d7e8f8;
+  .subtab.active {
+    border-color: transparent;
+    background: linear-gradient(132deg, rgba(14, 143, 209, 0.88), rgba(38, 193, 180, 0.88));
+    color: #fff;
   }
 
   .manage-block {
-    padding-top: 20rpx;
+    margin-top: 18rpx;
   }
 
   .manage-block + .manage-block {
-    margin-top: 20rpx;
+    margin-top: 22rpx;
     padding-top: 20rpx;
     border-top: 1rpx dashed #cadef2;
   }
@@ -182,10 +268,6 @@
 
   .pill-row {
     margin-top: 8rpx;
-  }
-
-  .collapse-card .form-title {
-    font-size: 28rpx;
   }
 
   button[plain] {

@@ -85,7 +85,7 @@ async def get_trends(
     metric_code: Annotated[str, Query()],
     date_from: Annotated[int, Query()],
     date_to: Annotated[int, Query()],
-    bucket: Annotated[str, Query()] = "day",
+    bucket: Annotated[str, Query()] = "minute",
     current_user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
@@ -103,7 +103,7 @@ async def get_trends(
             status_code=400,
         )
 
-    if bucket not in {"day", "week", "month"}:
+    if bucket not in {"minute", "day", "week", "month"}:
         raise AppError(
             "INVALID_ARGUMENT",
             "unsupported bucket",

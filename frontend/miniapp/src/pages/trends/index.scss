@@ -1,49 +1,76 @@
 .trends-page {
   .metric-row {
-    margin-top: 12rpx;
-  }
-
-  .trend-summary {
-    margin-top: 18rpx;
-    padding: 22rpx;
+    margin-top: 16rpx;
   }
 
   .metric-overview {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12rpx;
+    gap: 14rpx;
+    margin-bottom: 14rpx;
+  }
+
+  .metric-overview > view {
+    padding: 14rpx 16rpx;
+    border-radius: 16rpx;
+    border: 1rpx solid #d4e5f6;
+    background: rgba(255, 255, 255, 0.84);
+  }
+
+  .chart-list {
+    margin-top: 18rpx;
+    display: flex;
+    flex-direction: column;
+    gap: 18rpx;
   }
 
   .overview-value {
     display: block;
     margin-top: 8rpx;
-    font-size: 34rpx;
+    font-size: 36rpx;
     font-weight: 700;
-    color: #0f4a9b;
+    color: #185889;
   }
 
   .chart-card {
-    margin-top: 16rpx;
-    padding: 22rpx;
+    position: relative;
+    padding: 24rpx;
+    border-radius: 28rpx;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(14, 143, 209, 0.15), transparent 34%),
+      linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(245, 251, 255, 0.93));
   }
 
   .chart-title {
     display: block;
-    margin-bottom: 12rpx;
-    font-size: 26rpx;
-    font-weight: 600;
+    margin-bottom: 14rpx;
+    font-size: 28rpx;
+    font-weight: 700;
+    color: var(--ink-strong);
   }
 
   .trend-canvas {
     width: 100%;
     height: 420rpx;
-    border-radius: 16rpx;
-    background: #f9fcff;
-    border: 1rpx solid #dbe8fb;
+    border-radius: 18rpx;
+    background:
+      linear-gradient(180deg, rgba(14, 143, 209, 0.08), rgba(14, 143, 209, 0)),
+      #f8fcff;
+    border: 1rpx solid #d0e2f5;
+  }
+
+  .trend-dom {
+    width: 100%;
+    height: 420rpx;
+    border-radius: 18rpx;
+    background:
+      linear-gradient(180deg, rgba(14, 143, 209, 0.08), rgba(14, 143, 209, 0)),
+      #f8fcff;
+    border: 1rpx solid #d0e2f5;
   }
 
   .fallback-list {
-    margin-top: 14rpx;
+    margin-top: 16rpx;
     display: flex;
     flex-direction: column;
     gap: 10rpx;
@@ -53,5 +80,6 @@
     display: flex;
     justify-content: space-between;
     font-size: 24rpx;
+    color: #35516f;
   }
 }

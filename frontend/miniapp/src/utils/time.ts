@@ -21,6 +21,11 @@ export function formatMonthDay(input: number): string {
   return `${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
+export function formatMonthDayTime(input: number): string {
+  const date = new Date(input)
+  return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 export function formatDateTime(input: number): string {
   const date = new Date(input)
   return `${formatDate(input)} ${pad(date.getHours())}:${pad(date.getMinutes())}`

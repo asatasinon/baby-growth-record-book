@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Baby Growth Record API
-  version: 2.3.0
+  version: 2.3.1
   description: API specification for the baby growth record SaaS platform. IDs are decimal strings at API boundary and stored as bigint in database; time fields use UTC millisecond timestamps.
 servers:
   - url: /api/v1
@@ -489,8 +489,8 @@ paths:
           required: false
           schema:
             type: string
-            enum: [day, week, month]
-            default: day
+            enum: [minute, day, week, month]
+            default: minute
       responses:
         '200':
           description: success
@@ -1143,6 +1143,7 @@ components:
         bucket_date:
           type: integer
           format: int64
+          description: Bucket-aligned timestamp in milliseconds (minute/day/week/month)
         value:
           type: number
     TrendResponse:

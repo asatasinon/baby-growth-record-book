@@ -38,11 +38,11 @@ export const EXCRETION_LABEL_MAP: Record<string, string> = {
 }
 
 export const EVENT_TYPE_COLOR_MAP: Record<EventType, string> = {
-  feeding: '#0ea5e9',
-  excretion: '#10b981',
-  measurement: '#f97316',
-  sleep: '#4f46e5',
-  medication: '#ef4444',
-  vaccine: '#0891b2',
-  milestone: '#d946ef'
+  feeding: '#0e8fd1',
+  excretion: '#0eae79',
+  measurement: '#f59f2f',
+  sleep: '#3e63c9',
+  medication: '#ef5350',
+  vaccine: '#1f9fb8',
+  milestone: '#ff815f'
 }

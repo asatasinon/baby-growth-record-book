@@ -1,40 +1,70 @@
 .records-page {
+  .pill-row {
+    margin-top: 8rpx;
+  }
+
   .records-list {
-    margin-top: 18rpx;
+    margin-top: 20rpx;
     display: flex;
     flex-direction: column;
-    gap: 14rpx;
+    gap: 16rpx;
   }
 
   .event-card {
-    padding: 20rpx;
+    position: relative;
+    padding: 22rpx;
+    border-radius: 24rpx;
+  }
+
+  .event-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 8rpx;
+    height: 100%;
+    border-radius: 24rpx 0 0 24rpx;
+    background: linear-gradient(180deg, var(--brand), var(--accent));
   }
 
   .event-summary {
     display: block;
-    margin-top: 14rpx;
-    font-size: 28rpx;
+    margin-top: 16rpx;
+    font-size: 30rpx;
     font-weight: 700;
+    color: var(--ink-strong);
   }
 
   .event-notes {
     display: block;
-    margin-top: 8rpx;
+    margin-top: 10rpx;
     color: var(--text-sub);
     font-size: 24rpx;
+    line-height: 1.5;
   }
 
   .event-actions {
-    margin-top: 14rpx;
+    margin-top: 16rpx;
     display: flex;
     justify-content: flex-end;
-    gap: 12rpx;
+    gap: 10rpx;
+  }
+
+  .event-actions button {
+    min-width: 124rpx;
+    min-height: 66rpx;
+    margin: 0;
+    border-radius: 14rpx;
+    border: 1rpx solid #c4daf0;
+    background: rgba(255, 255, 255, 0.9);
+    color: #355a7f;
+    font-size: 24rpx;
   }
 
   .edit-panel {
-    margin-top: 16rpx;
-    padding-top: 12rpx;
-    border-top: 1rpx dashed #cddcf4;
+    margin-top: 18rpx;
+    padding-top: 14rpx;
+    border-top: 1rpx dashed #c8dbef;
   }
 
   .picker-like {
@@ -52,5 +82,9 @@
     display: flex;
     justify-content: flex-end;
     gap: 10rpx;
+  }
+
+  .edit-actions button {
+    min-width: 120rpx;
   }
 }

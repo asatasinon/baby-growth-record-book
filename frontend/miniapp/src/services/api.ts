@@ -270,7 +270,7 @@ export async function getTrendPoints(params: TrendParams): Promise<TrendResult> 
       metric_code: params.metricCode,
       date_from: params.dateFrom,
       date_to: params.dateTo,
-      bucket: 'day'
+      bucket: 'minute'
     }
   })
 }

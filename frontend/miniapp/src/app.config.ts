@@ -10,14 +10,14 @@ export default defineAppConfig({
   ],
   window: {
     backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#ffffff',
+    navigationBarBackgroundColor: '#f4f8ff',
     navigationBarTitleText: '成长记录',
     navigationBarTextStyle: 'black'
   },
   tabBar: {
-    color: '#6b7280',
-    selectedColor: '#0284c7',
-    borderStyle: 'black',
+    color: '#5d6f85',
+    selectedColor: '#0e8fd1',
+    borderStyle: 'white',
     list: [
       { pagePath: 'pages/home/index', text: '首页' },
       { pagePath: 'pages/records/index', text: '记录' },

@@ -2,30 +2,44 @@
   .login-card,
   .user-card,
   .profile-form-card {
-    padding: 24rpx;
+    padding: 26rpx;
+  }
+
+  .login-card {
+    border-radius: 28rpx;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(14, 143, 209, 0.18), transparent 35%),
+      linear-gradient(155deg, rgba(255, 255, 255, 0.96), rgba(241, 250, 255, 0.95));
   }
 
   .profile-form-card {
-    margin-top: 16rpx;
+    margin-top: 18rpx;
+    border-radius: 26rpx;
   }
 
   .hint {
     display: block;
-    margin-bottom: 16rpx;
+    margin-bottom: 18rpx;
     color: var(--text-sub);
     font-size: 24rpx;
+    line-height: 1.5;
   }
 
   .user-card {
     display: flex;
     flex-direction: column;
-    gap: 10rpx;
+    gap: 12rpx;
+    border-radius: 28rpx;
+    background:
+      radial-gradient(circle at 95% 8%, rgba(255, 129, 95, 0.2), transparent 34%),
+      linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(241, 251, 255, 0.94));
   }
 
   .user-name {
     display: block;
-    font-size: 32rpx;
+    font-size: 34rpx;
     font-weight: 700;
+    color: var(--ink-strong);
   }
 
   .picker-like {
@@ -35,9 +49,17 @@
 
   .form-title {
     display: block;
-    margin-bottom: 12rpx;
-    font-size: 28rpx;
+    margin-bottom: 14rpx;
+    font-size: 30rpx;
     font-weight: 700;
-    color: #103b80;
+    color: #20527d;
+  }
+
+  .pill-row {
+    margin-top: 8rpx;
+  }
+
+  button[plain] {
+    margin-top: 8rpx;
   }
 }

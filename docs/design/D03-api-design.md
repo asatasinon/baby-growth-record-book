@@ -2,7 +2,7 @@
 
 > 文档编号：D03
 > 状态：草案
-> 版本号：v0.5.0
+> 版本号：v0.6.0
 > 最后更新时间：2026-04-13
 > 审核人：待定
 > 生效日期：2026-04-13
@@ -17,6 +17,7 @@
 | v0.3.0 | 2026-04-12 | Codex | 明确 API 层 ID 使用字符串，后端入参转 `bigint`、出参转字符串。 |
 | v0.4.0 | 2026-04-12 | Codex | 增加 ID 正则约束、Pydantic 转换层规范和错误 ID 标准示例。 |
 | v0.5.0 | 2026-04-13 | Codex | 增加手机号+密码登录；微信登录改为手机号归一用户身份。 |
+| v0.6.0 | 2026-04-13 | Codex | 趋势接口补充 `minute` 粒度，默认按记录时间分钟点位返回，用于折线图展示。 |
 
 ## 文档目的
 - 定义首版 REST API 的路径、鉴权、请求响应结构、错误码和公共约定。
@@ -230,7 +231,7 @@ def to_api_id(value: int) -> str:
   - `metric_code`
   - `date_from`（毫秒时间戳）
   - `date_to`（毫秒时间戳）
-  - `bucket=day|week|month`
+  - `bucket=minute|day|week|month`（默认 `minute`）
 - 返回示例：
 
 ```json
@@ -241,13 +242,15 @@ def to_api_id(value: int) -> str:
     "metric_code": "weight_g",
     "unit": "g",
     "points": [
-      {"bucket_date": 1743436800000, "value": 4900},
-      {"bucket_date": 1744041600000, "value": 4970},
-      {"bucket_date": 1744387200000, "value": 5010}
+      {"bucket_date": 1744388340000, "value": 4900},
+      {"bucket_date": 1744391940000, "value": 4970},
+      {"bucket_date": 1744395600000, "value": 5010}
     ]
   }
 }
 ```
+
+- 前端趋势页按 `bucket_date` 时间轴渲染折线图，默认精确到分钟。
 
 ## 提醒接口
 

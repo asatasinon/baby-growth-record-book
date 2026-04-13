@@ -7,6 +7,12 @@ def now_ms() -> int:
     return int(datetime.now(UTC).timestamp() * 1000)
 
 
+def minute_start_ms(timestamp_ms: int) -> int:
+    dt = datetime.fromtimestamp(timestamp_ms / 1000, tz=UTC)
+    minute = datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, tzinfo=UTC)
+    return int(minute.timestamp() * 1000)
+
+
 def day_start_ms(timestamp_ms: int) -> int:
     dt = datetime.fromtimestamp(timestamp_ms / 1000, tz=UTC)
     day = datetime(dt.year, dt.month, dt.day, tzinfo=UTC)
@@ -44,6 +50,8 @@ def next_month_start_ms(timestamp_ms: int) -> int:
 
 
 def bucket_start_ms(timestamp_ms: int, bucket: str) -> int:
+    if bucket == "minute":
+        return minute_start_ms(timestamp_ms)
     if bucket == "day":
         return day_start_ms(timestamp_ms)
     if bucket == "week":

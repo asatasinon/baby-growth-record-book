@@ -118,7 +118,7 @@ export interface TrendResult {
   baby_id: string
   metric_code: string
   unit: string
-  bucket: 'day' | 'week' | 'month'
+  bucket: 'minute' | 'day' | 'week' | 'month'
   window: {
     date_from: number
     date_to: number

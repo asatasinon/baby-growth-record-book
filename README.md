@@ -28,7 +28,8 @@ pnpm dev:admin     # 管理后台
 
 ```bash
 pnpm setup:python   # 安装 backend + worker 的 uv 依赖（含 dev）
-pnpm db:init        # 重置并初始化 PostgreSQL schema（开发环境）
+pnpm db:init        # 重置 schema，加载 S02 基线并执行 Alembic upgrade（开发环境）
+pnpm db:upgrade     # 执行 Alembic 迁移到最新版本（head）
 pnpm db:seed        # 导入本地联调用测试数据（docs/specs/S03-test-seed.sql）
 pnpm db:reset       # 等价于 db:init + db:seed
 pnpm dev:backend    # 启动后端 API（统一 main 入口）
@@ -38,6 +39,7 @@ pnpm lint           # backend/worker lint + frontend build 校验
 ```
 
 > `pnpm db:init` 会清空数据库 `public` schema，仅用于本地开发与联调环境。
+> `pnpm db:upgrade` 使用 Alembic 管理增量迁移；脚本会在本机通过 `localhost:5432` 连接数据库。
 
 ## 后端（uv）
 

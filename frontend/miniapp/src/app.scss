@@ -37,6 +37,7 @@
 page {
   min-height: 100%;
   color: #2a3c52;
+  line-height: 1.6;
   background:
     radial-gradient(circle at 8% 0%, rgba(14, 143, 209, 0.18), transparent 30%),
     radial-gradient(circle at 95% 12%, rgba(255, 129, 95, 0.16), transparent 34%),
@@ -58,7 +59,8 @@ page {
 
 .section-title {
   position: relative;
-  margin: 30rpx 0 16rpx;
+  display: block;
+  margin: 20rpx 0;
   padding-left: 20rpx;
   font-size: 32rpx;
   font-weight: 700;
@@ -173,6 +175,14 @@ page {
 
 .form-item {
   margin-bottom: 18rpx;
+}
+
+.form-title {
+  display: block;
+  margin-bottom: 16rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1b2838;
 }
 
 .form-label {

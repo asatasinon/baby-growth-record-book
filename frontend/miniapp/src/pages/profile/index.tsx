@@ -27,6 +27,12 @@ const TIMEZONE_LABELS: Record<string, string> = {
   'Europe/London': '英国·伦敦'
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  owner: '管理员',
+  caregiver: '照护者',
+  viewer: '查看者'
+}
+
 function getGenderLabel(gender: BabyInfo['gender']): string {
   if (gender === 'male') {
     return '男'
@@ -304,7 +310,7 @@ export default function ProfilePage() {
               </View>
               <View className='meta-item'>
                 <Text className='meta-label'>家庭角色</Text>
-                <Text className='meta-value'>{activeFamily?.role || '未设置'}</Text>
+                <Text className='meta-value'>{activeFamily ? (ROLE_LABELS[activeFamily.role] ?? activeFamily.role) : '未设置'}</Text>
               </View>
               <View className='meta-item'>
                 <Text className='meta-label'>家庭关系</Text>

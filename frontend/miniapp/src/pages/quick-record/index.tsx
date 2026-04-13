@@ -6,7 +6,9 @@ import {
   EVENT_TYPE_LABEL_MAP,
   EXCRETION_TYPE_OPTIONS,
   FEEDING_TYPE_OPTIONS,
-  QUICK_EVENT_TYPES
+  QUICK_EVENT_TYPES,
+  STOOL_COLOR_OPTIONS,
+  STOOL_TEXTURE_OPTIONS
 } from '@/constants/event'
 import { createEvent } from '@/services/api'
 import { getActiveBabyId, getActiveFamilyId, getSession } from '@/services/storage'
@@ -49,6 +51,8 @@ export default function QuickRecordPage() {
   const [excretionTypes, setExcretionTypes] = useState<Array<(typeof EXCRETION_TYPE_OPTIONS)[number]['value']>>([
     'urine'
   ])
+  const [stoolColor, setStoolColor] = useState<string>('')
+  const [stoolTexture, setStoolTexture] = useState<string>('')
   const [sleepMinutes, setSleepMinutes] = useState('60')
   const [weightG, setWeightG] = useState('4000')
   const [temperatureC, setTemperatureC] = useState('')
@@ -136,20 +140,25 @@ export default function QuickRecordPage() {
       setIsSubmitting(true)
       try {
         await Promise.all(
-          excretionTypes.map((excretionType) =>
-            createEvent({
+          excretionTypes.map((excretionType) => {
+            const excretionPayload: Record<string, unknown> = {
+              excretion_type: excretionType,
+              timezone: resolveTimezone()
+            }
+            if (excretionType === 'stool') {
+              if (stoolColor) excretionPayload.color = stoolColor
+              if (stoolTexture) excretionPayload.texture = stoolTexture
+            }
+            return createEvent({
               session,
               familyId: context.familyId,
               babyId: context.babyId,
               eventType: quickType,
               occurredAt,
               notes: notes.trim() || undefined,
-              payload: {
-                excretion_type: excretionType,
-                timezone: resolveTimezone()
-              }
+              payload: excretionPayload
             })
-          )
+          })
         )
 
         setNotes('')
@@ -375,20 +384,56 @@ export default function QuickRecordPage() {
         )}
 
         {quickType === 'excretion' && (
-          <View className='form-item'>
-            <Text className='form-label'>排泄类型</Text>
-            <View className='pill-row'>
-              {EXCRETION_TYPE_OPTIONS.map((item) => (
-                <View
-                  key={item.value}
-                  className={`pill ${excretionTypes.includes(item.value) ? 'active' : ''}`}
-                  onClick={() => toggleExcretionType(item.value)}
-                >
-                  <Text>{item.label}</Text>
-                </View>
-              ))}
+          <View>
+            <View className='form-item'>
+              <Text className='form-label'>排泄类型</Text>
+              <View className='pill-row'>
+                {EXCRETION_TYPE_OPTIONS.map((item) => (
+                  <View
+                    key={item.value}
+                    className={`pill ${excretionTypes.includes(item.value) ? 'active' : ''}`}
+                    onClick={() => toggleExcretionType(item.value)}
+                  >
+                    <Text>{item.label}</Text>
+                  </View>
+                ))}
+              </View>
+              <Text className='muted'>可多选，多选会一次创建多条记录。</Text>
             </View>
-            <Text className='muted'>可多选，多选会一次创建多条记录。</Text>
+
+            {excretionTypes.includes('stool') && (
+              <View>
+                <View className='form-item'>
+                  <Text className='form-label'>大便颜色（可选）</Text>
+                  <View className='pill-row'>
+                    {STOOL_COLOR_OPTIONS.map((item) => (
+                      <View
+                        key={item.value}
+                        className={`pill ${stoolColor === item.value ? 'active' : ''}`}
+                        onClick={() => setStoolColor((prev) => (prev === item.value ? '' : item.value))}
+                      >
+                        <Text>{item.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+
+                <View className='form-item'>
+                  <Text className='form-label'>大便状态（可选）</Text>
+                  <View className='pill-row'>
+                    {STOOL_TEXTURE_OPTIONS.map((item) => (
+                      <View
+                        key={item.value}
+                        className={`pill ${stoolTexture === item.value ? 'active' : ''}`}
+                        onClick={() => setStoolTexture((prev) => (prev === item.value ? '' : item.value))}
+                      >
+                        <Text>{item.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            )}
           </View>
         )}
 
@@ -487,13 +532,12 @@ export default function QuickRecordPage() {
           />
         </View>
 
-        <Button className='btn-primary' loading={isSubmitting} onClick={submitQuickRecord}>
-          提交 {EVENT_TYPE_LABEL_MAP[quickType]} 记录
-        </Button>
-
-        <View className='helper-actions'>
-          <Button className='link-btn' plain onClick={() => Taro.switchTab({ url: '/pages/records/index' })}>
-            去记录页查看
+        <View className='form-actions'>
+          <Button className='btn-secondary' disabled={isSubmitting} onClick={navigateBackOrHome}>
+            取消
+          </Button>
+          <Button className='btn-primary' loading={isSubmitting} onClick={submitQuickRecord}>
+            保存
           </Button>
         </View>
       </View>

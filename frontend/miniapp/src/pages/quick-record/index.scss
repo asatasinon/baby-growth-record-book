@@ -12,6 +12,27 @@
     margin-bottom: 14rpx;
   }
 
+  .form-actions {
+    margin-top: 20rpx;
+    display: flex;
+    gap: 16rpx;
+
+    button {
+      flex: 1;
+      margin: 0;
+    }
+  }
+
+  .btn-secondary {
+    min-height: 80rpx;
+    border-radius: 14rpx;
+    border: 1rpx solid #c6daf0;
+    background: rgba(255, 255, 255, 0.9);
+    color: #355978;
+    font-size: 28rpx;
+    font-weight: 500;
+  }
+
   .helper-actions {
     margin-top: 12rpx;
     display: flex;

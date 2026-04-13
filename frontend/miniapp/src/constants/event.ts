@@ -64,6 +64,27 @@ export const EXCRETION_TYPE_OPTIONS = [
 
 export type ExcretionTypeValue = (typeof EXCRETION_TYPE_OPTIONS)[number]['value']
 
+export const STOOL_COLOR_OPTIONS = [
+  { value: 'yellow', label: '黄色' },
+  { value: 'yellow_green', label: '黄绿色' },
+  { value: 'green', label: '绿色' },
+  { value: 'brown', label: '棕色' },
+  { value: 'black', label: '黑色' },
+  { value: 'white', label: '灰白色' }
+] as const
+
+export type StoolColorValue = (typeof STOOL_COLOR_OPTIONS)[number]['value']
+
+export const STOOL_TEXTURE_OPTIONS = [
+  { value: 'watery', label: '水样' },
+  { value: 'loose', label: '稀糊' },
+  { value: 'soft', label: '软糊' },
+  { value: 'formed', label: '成形' },
+  { value: 'hard', label: '干硬' }
+] as const
+
+export type StoolTextureValue = (typeof STOOL_TEXTURE_OPTIONS)[number]['value']
+
 export const EXCRETION_TYPE_COLOR_MAP: Record<ExcretionTypeValue, string> = {
   urine: '#0eae79',
   stool: '#f59f2f'

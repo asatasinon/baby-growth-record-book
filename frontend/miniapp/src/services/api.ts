@@ -49,6 +49,10 @@ export async function loginWithWechat(code: string, phone: string): Promise<Auth
 interface CreateFamilyPayload {
   name: string
   timezone?: string
+  familyAlias?: string
+  city?: string
+  address?: string
+  notes?: string
 }
 
 export async function createFamily(
@@ -61,7 +65,40 @@ export async function createFamily(
     token: session.access_token,
     data: {
       name: payload.name,
-      timezone: payload.timezone || 'Asia/Shanghai'
+      timezone: payload.timezone || 'Asia/Shanghai',
+      family_alias: payload.familyAlias,
+      city: payload.city,
+      address: payload.address,
+      notes: payload.notes
+    }
+  })
+}
+
+interface UpdateFamilyPayload {
+  name?: string
+  timezone?: string
+  familyAlias?: string
+  city?: string
+  address?: string
+  notes?: string
+}
+
+export async function updateFamily(
+  session: AuthSession,
+  familyId: string,
+  payload: UpdateFamilyPayload
+): Promise<FamilyInfo> {
+  return request<FamilyInfo>({
+    path: `/families/${familyId}`,
+    method: 'PATCH',
+    token: session.access_token,
+    data: {
+      name: payload.name,
+      timezone: payload.timezone,
+      family_alias: payload.familyAlias,
+      city: payload.city,
+      address: payload.address,
+      notes: payload.notes
     }
   })
 }
@@ -69,6 +106,7 @@ export async function createFamily(
 interface InviteFamilyMemberPayload {
   inviteePhone: string
   role: 'owner' | 'caregiver' | 'viewer'
+  relationLabel?: string
 }
 
 export async function inviteFamilyMember(
@@ -82,7 +120,42 @@ export async function inviteFamilyMember(
     token: session.access_token,
     data: {
       invitee_phone: payload.inviteePhone,
-      role: payload.role
+      role: payload.role,
+      relation_label: payload.relationLabel
+    }
+  })
+}
+
+export async function listFamilyMembers(
+  session: AuthSession,
+  familyId: string
+): Promise<FamilyMemberInviteResult[]> {
+  return request<FamilyMemberInviteResult[]>({
+    path: `/families/${familyId}/members`,
+    token: session.access_token
+  })
+}
+
+interface UpdateFamilyMemberPayload {
+  role?: 'owner' | 'caregiver' | 'viewer'
+  status?: 'pending' | 'active' | 'removed'
+  relationLabel?: string
+}
+
+export async function updateFamilyMember(
+  session: AuthSession,
+  familyId: string,
+  memberId: string,
+  payload: UpdateFamilyMemberPayload
+): Promise<FamilyMemberInviteResult> {
+  return request<FamilyMemberInviteResult>({
+    path: `/families/${familyId}/members/${memberId}`,
+    method: 'PATCH',
+    token: session.access_token,
+    data: {
+      role: payload.role,
+      status: payload.status,
+      relation_label: payload.relationLabel
     }
   })
 }
@@ -102,7 +175,10 @@ interface CreateBabyPayload {
   nickname?: string
   gender?: 'male' | 'female' | 'unknown'
   birthDateMs: number
+  birthPlace?: string
   birthWeightG?: number
+  birthHeightCm?: number
+  birthHeadCircumferenceCm?: number
 }
 
 export async function createBaby(
@@ -119,13 +195,20 @@ export async function createBaby(
       nickname: payload.nickname,
       gender: payload.gender || 'unknown',
       birth_date: payload.birthDateMs,
-      birth_weight_g: payload.birthWeightG
+      birth_place: payload.birthPlace,
+      birth_weight_g: payload.birthWeightG,
+      birth_height_cm: payload.birthHeightCm,
+      birth_head_circumference_cm: payload.birthHeadCircumferenceCm
     }
   })
 }
 
 interface UpdateBabyPayload {
+  name?: string
   nickname?: string
+  gender?: 'male' | 'female' | 'unknown'
+  birthDateMs?: number
+  birthPlace?: string
   birthWeightG?: number
   birthHeightCm?: number
   birthHeadCircumferenceCm?: number
@@ -141,7 +224,11 @@ export async function updateBaby(
     method: 'PATCH',
     token: session.access_token,
     data: {
+      name: payload.name,
       nickname: payload.nickname,
+      gender: payload.gender,
+      birth_date: payload.birthDateMs,
+      birth_place: payload.birthPlace,
       birth_weight_g: payload.birthWeightG,
       birth_height_cm: payload.birthHeightCm,
       birth_head_circumference_cm: payload.birthHeadCircumferenceCm

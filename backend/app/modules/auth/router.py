@@ -191,6 +191,11 @@ async def _build_login_data(user: User, db: AsyncSession) -> dict:
             "name": f.name,
             "role": fm.role,
             "timezone": f.timezone,
+            "family_alias": f.family_alias,
+            "city": f.city,
+            "address": f.address,
+            "notes": f.notes,
+            "relationship": fm.relation_label,
         }
         for fm, f in rows
     ]

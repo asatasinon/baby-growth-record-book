@@ -6,6 +6,8 @@ export default defineAppConfig({
     'pages/trends/index',
     'pages/ai/index',
     'pages/profile/index',
+    'pages/family-manage/index',
+    'pages/baby-manage/index',
     'pages/alerts/index',
     'pages/reports/index'
   ],

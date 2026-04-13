@@ -1,0 +1,63 @@
+.baby-manage-page {
+  .section-title:first-of-type {
+    margin-top: 10rpx;
+  }
+
+  .family-switch-card,
+  .manage-tab-card,
+  .form-card {
+    padding: 22rpx;
+  }
+
+  .manage-tab-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12rpx;
+  }
+
+  .manage-tab {
+    min-height: 72rpx;
+    border-radius: 14rpx;
+    border: 1rpx solid #c7ddf3;
+    background: rgba(255, 255, 255, 0.88);
+    color: #3e6487;
+    font-size: 25rpx;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .manage-tab.active {
+    border-color: transparent;
+    color: #fff;
+    background: linear-gradient(132deg, var(--brand), var(--brand-2));
+    box-shadow: 0 10rpx 24rpx rgba(14, 143, 209, 0.22);
+  }
+
+  .tab-hint {
+    display: block;
+    margin-top: 14rpx;
+    font-size: 24rpx;
+    color: var(--text-sub);
+  }
+
+  .picker-like {
+    line-height: 1.6;
+    color: var(--text-main);
+  }
+
+  .time-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12rpx;
+  }
+
+  .form-card {
+    border-radius: 24rpx;
+  }
+
+  .pill-row {
+    margin-top: 8rpx;
+  }
+}

@@ -1,0 +1,114 @@
+.family-manage-page {
+  .section-title:first-of-type {
+    margin-top: 10rpx;
+  }
+
+  .family-switch-card,
+  .manage-tab-card,
+  .form-card,
+  .member-list-card {
+    padding: 22rpx;
+  }
+
+  .family-switch-card {
+    border-radius: 24rpx;
+  }
+
+  .manage-tab-card {
+    border-radius: 24rpx;
+  }
+
+  .manage-tab-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12rpx;
+  }
+
+  .manage-tab {
+    min-height: 72rpx;
+    border-radius: 14rpx;
+    border: 1rpx solid #c7ddf3;
+    background: rgba(255, 255, 255, 0.88);
+    color: #3e6487;
+    font-size: 25rpx;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .manage-tab.active {
+    border-color: transparent;
+    color: #fff;
+    background: linear-gradient(132deg, var(--brand), var(--brand-2));
+    box-shadow: 0 10rpx 24rpx rgba(14, 143, 209, 0.22);
+  }
+
+  .tab-hint {
+    display: block;
+    margin-top: 14rpx;
+    font-size: 24rpx;
+    color: var(--text-sub);
+  }
+
+  .form-card {
+    border-radius: 24rpx;
+  }
+
+  .picker-like {
+    line-height: 1.6;
+    color: var(--text-main);
+  }
+
+  .member-list-card {
+    border-radius: 24rpx;
+  }
+
+  .member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14rpx;
+  }
+
+  .member-item {
+    padding: 18rpx;
+    border-radius: 16rpx;
+    border: 1rpx solid #d4e6f8;
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .member-name {
+    display: block;
+    margin-bottom: 8rpx;
+    font-size: 28rpx;
+    font-weight: 700;
+    color: var(--ink-strong);
+  }
+
+  .member-meta {
+    display: block;
+    margin-bottom: 10rpx;
+    font-size: 23rpx;
+    color: var(--text-sub);
+  }
+
+  .member-item .form-label {
+    margin-top: 10rpx;
+  }
+
+  .member-item .form-label:first-of-type {
+    margin-top: 0;
+  }
+
+  .member-save-btn {
+    margin-top: 16rpx;
+    width: 100%;
+    min-height: 66rpx;
+    border-radius: 14rpx;
+    border: 1rpx solid #bfd9f2;
+    background: rgba(255, 255, 255, 0.92);
+    color: #32587b;
+    font-size: 24rpx;
+    font-weight: 700;
+  }
+}

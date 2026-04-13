@@ -23,13 +23,18 @@ class BabyCreateRequest(BaseModel):
     nickname: str | None = None
     gender: Literal["male", "female", "unknown"] = "unknown"
     birth_date: int
+    birth_place: str | None = None
     birth_weight_g: int | None = None
     birth_height_cm: float | None = None
     birth_head_circumference_cm: float | None = None
 
 
 class BabyUpdateRequest(BaseModel):
+    name: str | None = None
     nickname: str | None = None
+    gender: Literal["male", "female", "unknown"] | None = None
+    birth_date: int | None = None
+    birth_place: str | None = None
     birth_weight_g: int | None = None
     birth_height_cm: float | None = None
     birth_head_circumference_cm: float | None = None
@@ -49,6 +54,7 @@ def _baby_to_payload(baby: Baby) -> dict:
         "nickname": baby.nickname,
         "gender": baby.gender,
         "birth_date": baby.birth_date,
+        "birth_place": baby.birth_place,
         "birth_weight_g": baby.birth_weight_g,
         "birth_height_cm": _to_float(baby.birth_height_cm),
         "birth_head_circumference_cm": _to_float(baby.birth_head_circumference_cm),
@@ -87,6 +93,7 @@ async def create_baby(
         nickname=payload.nickname,
         gender=payload.gender,
         birth_date=payload.birth_date,
+        birth_place=payload.birth_place,
         birth_weight_g=payload.birth_weight_g,
         birth_height_cm=payload.birth_height_cm,
         birth_head_circumference_cm=payload.birth_head_circumference_cm,

@@ -18,6 +18,11 @@ export interface FamilyInfo {
   name: string
   role: 'owner' | 'caregiver' | 'viewer'
   timezone: string
+  family_alias: string | null
+  city: string | null
+  address: string | null
+  notes: string | null
+  relationship: string | null
 }
 
 export type FamilyMemberRole = 'owner' | 'caregiver' | 'viewer'
@@ -43,6 +48,7 @@ export interface BabyInfo {
   nickname: string | null
   gender: 'male' | 'female' | 'unknown'
   birth_date: number
+  birth_place: string | null
   birth_weight_g: number | null
   birth_height_cm: number | null
   birth_head_circumference_cm: number | null
@@ -95,6 +101,10 @@ export interface FamilyMemberInviteResult {
   user_id: string
   role: FamilyMemberRole
   status: FamilyMemberStatus
+  relation_label: string | null
+  user_display_name?: string | null
+  joined_at?: number | null
+  can_edit?: boolean
 }
 
 export interface DailySummary {

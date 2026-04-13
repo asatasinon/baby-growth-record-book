@@ -15,6 +15,7 @@ class Baby(Base, TimestampMixin):
     nickname: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     gender: Mapped[str] = mapped_column(String(20), nullable=False, default="unknown")
     birth_date: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    birth_place: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     due_date: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     birth_weight_g: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     birth_height_cm: Mapped[Optional[float]] = mapped_column(Numeric(6, 2), nullable=True)

@@ -2,8 +2,14 @@
   .login-card,
   .user-card,
   .quick-switch-card,
-  .manage-panel {
+  .manage-entry-card {
     padding: 26rpx;
+  }
+
+  .profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16rpx;
   }
 
   .login-card {
@@ -11,12 +17,6 @@
     background:
       radial-gradient(circle at 100% 0%, rgba(14, 143, 209, 0.18), transparent 35%),
       linear-gradient(155deg, rgba(255, 255, 255, 0.96), rgba(241, 250, 255, 0.95));
-  }
-
-  .profile-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16rpx;
   }
 
   .hint {
@@ -39,7 +39,7 @@
 
   .user-header {
     align-items: center;
-    gap: 14rpx;
+    gap: 12rpx;
   }
 
   .user-name {
@@ -107,21 +107,6 @@
     border-top: 1rpx dashed #cadff2;
   }
 
-  .empty-inline {
-    margin-top: 6rpx;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16rpx;
-  }
-
-  .empty-inline button[plain] {
-    margin-top: 0;
-    min-height: 58rpx;
-    padding: 0 24rpx;
-    border-radius: 999rpx;
-  }
-
   .baby-brief {
     margin-top: 20rpx;
     padding-top: 20rpx;
@@ -151,9 +136,9 @@
 
   .brief-label {
     display: block;
+    margin-bottom: 6rpx;
     font-size: 21rpx;
     color: var(--text-sub);
-    margin-bottom: 6rpx;
   }
 
   .brief-value {
@@ -164,113 +149,27 @@
     word-break: break-all;
   }
 
-  .manage-panel {
+  .manage-entry-card {
     border-radius: 26rpx;
     background: linear-gradient(155deg, rgba(255, 255, 255, 0.95), rgba(244, 251, 255, 0.95));
   }
 
-  .manage-tab-row {
+  .entry-grid {
     margin-top: 8rpx;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12rpx;
   }
 
-  .manage-tab {
-    min-height: 74rpx;
-    padding: 0 12rpx;
-    border-radius: 14rpx;
-    border: 1rpx solid #c8ddf1;
-    background: rgba(255, 255, 255, 0.88);
-    color: #3b6184;
-    font-size: 26rpx;
+  .entry-btn {
+    width: 100%;
+    min-height: 82rpx;
+    margin: 0;
+    border-radius: 16rpx;
+    border: 1rpx solid #c7ddf3;
+    background: rgba(255, 255, 255, 0.9);
+    color: #2f587e;
+    font-size: 28rpx;
     font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .manage-tab.active {
-    border-color: transparent;
-    color: #fff;
-    background: linear-gradient(132deg, var(--brand), var(--brand-2));
-    box-shadow: 0 10rpx 24rpx rgba(14, 143, 209, 0.22);
-  }
-
-  .manage-placeholder {
-    display: block;
-    margin-top: 16rpx;
-    font-size: 24rpx;
-  }
-
-  .manage-tab-body {
-    margin-top: 18rpx;
-    padding-top: 18rpx;
-    border-top: 1rpx dashed #cadef2;
-  }
-
-  .subtab-row {
-    display: flex;
-    gap: 12rpx;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding-bottom: 4rpx;
-  }
-
-  .subtab {
-    min-height: 58rpx;
-    padding: 0 20rpx;
-    border-radius: 999rpx;
-    border: 1rpx solid #c6dbf0;
-    background: rgba(255, 255, 255, 0.88);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #456486;
-    font-size: 24rpx;
-    font-weight: 600;
-  }
-
-  .subtab.active {
-    border-color: transparent;
-    background: linear-gradient(132deg, rgba(14, 143, 209, 0.88), rgba(38, 193, 180, 0.88));
-    color: #fff;
-  }
-
-  .manage-block {
-    margin-top: 18rpx;
-  }
-
-  .manage-block + .manage-block {
-    margin-top: 22rpx;
-    padding-top: 20rpx;
-    border-top: 1rpx dashed #cadef2;
-  }
-
-  .owner-hint {
-    display: block;
-    margin-top: 20rpx;
-    font-size: 24rpx;
-  }
-
-  .picker-like {
-    line-height: 1.6;
-    color: var(--text-main);
-  }
-
-  .form-title {
-    display: block;
-    margin-bottom: 14rpx;
-    font-size: 30rpx;
-    font-weight: 700;
-    color: #20527d;
-  }
-
-  .pill-row {
-    margin-top: 8rpx;
-  }
-
-  button[plain] {
-    margin-top: 8rpx;
   }
 }
